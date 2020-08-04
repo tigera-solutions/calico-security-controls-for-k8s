@@ -103,6 +103,9 @@ kubectl create clusterrolebinding paul-admin-access --clusterrole tigera-network
 kubectl create sa sally
 # configure role and rolebinding
 kubectl create -f demo/20-rbac/security-roles-rolebindings.yaml
+
+# deploy additional role and rolebinding to allow sally access k8s net policies
+kubectl create -f demo/20-rbac/k8s.net-policy-access-roles-rolebindings.yaml
 ```
 
 Retrieve token to login into Calico Enterprise Manager.

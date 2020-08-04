@@ -1,7 +1,7 @@
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  name: netpolicy-access
+  name: netpolicy-reader
 rules:
 - apiGroups: ["networking.k8s.io","extensions",""]
   resources: ["networkpolicies"]
@@ -11,13 +11,13 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  name: sally-netpolicy-access
+  name: sally-netpolicy-reader
 subjects:
 - kind: ServiceAccount
   name: sally
   namespace: default
 roleRef:
   kind: ClusterRole
-  name: netpolicy-access
+  name: netpolicy-reader
   apiGroup: rbac.authorization.k8s.io
 ---
