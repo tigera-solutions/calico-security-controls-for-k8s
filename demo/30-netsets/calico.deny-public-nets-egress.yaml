@@ -1,0 +1,25 @@
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: security.deny-public-nets-egress
+spec:
+  tier: security
+  selector: "app == 'centos'"
+  order: 100
+  types:
+    - Egress
+  egress:
+  - action: Allow
+    protocol: UDP
+    source: {}
+    destination:
+      ports:
+      - '53'
+  - action: Allow
+    source: {}
+    destination:
+      selector: "type != 'public'"
+  - action: Deny
+    source: {}
+    destination:
+      selector: "type == 'public'"

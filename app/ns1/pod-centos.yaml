@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: centos
+  namespace: ns1
+  labels:
+    app: centos
+spec:
+  containers:
+  - name: centos
+    image: centos:latest
+    # Just spin & wait forever
+    command: [ "/bin/bash", "-c", "--" ]
+    args: [ "while true; do curl http://nginx-svc; sleep 3; done;" ]
+    resources: {}

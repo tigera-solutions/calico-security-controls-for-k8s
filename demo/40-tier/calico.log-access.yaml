@@ -1,0 +1,15 @@
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: log-nginx-ingress
+spec:
+  order: 100
+  selector: "app == 'nginx'"
+  types:
+  - Ingress
+  ingress:
+  - action: Log
+    protocol: TCP
+    source:
+      selector: "app == 'centos' || app == 'netshoot'"
+    destination: {}

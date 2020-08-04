@@ -1,0 +1,17 @@
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: allow-nginx-ingress-ns2
+  namespace: ns2
+spec:
+  order: 1000
+  selector: "app == 'nginx'"
+  types:
+  - Ingress
+  ingress:
+  - action: Allow
+    protocol: TCP
+    source: {}
+    destination:
+      ports:
+      - '80'
