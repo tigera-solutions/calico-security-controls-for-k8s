@@ -8,7 +8,7 @@ This guide contains example demo scenarios to showcase security controls for Kub
 - Default deny policy
 - Kubernetes RBAC
 - Calico security controls: `tiers`, `network policies`, `network sets`, `threat feeds`, `alerts`, `compliance reports`
-- Intrusion and threat detection\
+- Intrusion, anomaly, and threat detection
 
 ## Deploy demo application
 
