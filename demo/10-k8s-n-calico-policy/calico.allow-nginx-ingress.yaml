@@ -1,3 +1,4 @@
+# allow ingress into nginx app within ns2 namespace
 apiVersion: projectcalico.org/v3
 kind: NetworkPolicy
 metadata:
@@ -13,5 +14,26 @@ spec:
     protocol: TCP
     source: {}
     destination:
+      ports:
+      - '80'
+---
+
+# allow egress from any pod to nginx app within ns2 namespace
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: allow-netshoot-egress-ns2
+  namespace: ns2
+spec:
+  order: 1000
+  selector: "projectcalico.org/namespace == 'ns2'"
+  types:
+  - Egress
+  egress:
+  - action: Allow
+    protocol: TCP
+    source: {}
+    destination:
+      selector: "app == 'nginx'"
       ports:
       - '80'

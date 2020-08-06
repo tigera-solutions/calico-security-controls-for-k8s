@@ -4,22 +4,17 @@ metadata:
   name: security.deny-public-nets-egress
 spec:
   tier: security
-  selector: "app == 'centos'"
+  # label on ns1 namespace
+  namespaceSelector: compliance == "open"
   order: 100
   types:
     - Egress
   egress:
-  - action: Allow
-    protocol: UDP
-    source: {}
-    destination:
-      ports:
-      - '53'
-  - action: Allow
-    source: {}
-    destination:
-      selector: "type != 'public'"
   - action: Deny
+    protocol: TCP
     source: {}
     destination:
       selector: "type == 'public'"
+  # - action: Pass
+  #   source: {}
+  #   destination: {}

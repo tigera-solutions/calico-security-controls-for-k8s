@@ -31,6 +31,8 @@ A common security practice is to only open access required by applications and s
 
 Deploy k8s `default-deny` policy that applies to `ns1` namespace.
 
+>Once you deploy `default-deny` policy, you **must** include both `Ingress` and `Egress` type rules into policies to allow traffic.
+
 ```bash
 # deploy policy
 kubectl apply -f demo/10-k8s-n-calico-policy/k8s.deny-all.yaml
@@ -116,24 +118,6 @@ SA='sally'
 kubectl get secret $(kubectl get serviceaccount $SA -o jsonpath='{range .secrets[*]}{.name}{"\n"}{end}' | grep token) -o go-template='{{.data.token | base64decode}}'
 ```
 
-## Networks Sets
-
-Calico offers `NetworkSets` and `GlobalNetworkSets` resources to apply security controls to a group of IPs or DNS names.
-
-Deploy a `GlobalNetworkSet` that represents public networks and policy that targets it.
-
-```bash
-# deploy netset
-kubectl apply -f demo/30-netsets/calico.public-nets.yaml
-# deploy policy
-kubectl apply -f demo/30-netsets/calico.deny-public-nets-egress.yaml
-
-# test centos pod access to public IPs
-PUB_IP=$(dig +short www.apple.com | tail -n1)
-kubectl -n ns1 exec -t centos -- sh -c "ping -c3 $PUB_IP"
-kubectl -n ns1 exec -t centos -- sh -c 'curl -m 5 -sI http://www.google.com 2>/dev/null | grep -i http'
-```
-
 ## Policy tiers
 
 Calico Enterprise provides policy tiers that allow to categorize the policies. For instance, by team function or organizational structure.
@@ -146,6 +130,30 @@ kubectl apply -f demo/30-tier/tier-security.yaml
 
 # deploy log-access policy into security tier
 kubectl apply -f demo/30-tier/calico.log-access.yaml
+
+# move allow-kube-dns policy to a higher tier
+kubectl delete -f demo/10-k8s-n-calico-policy/calico.allow-kube-dns.yaml
+kubectl apply -f demo/30-tier/calico.allow-kube-dns.yaml
+```
+
+## Networks Sets
+
+Calico offers `NetworkSets` and `GlobalNetworkSets` resources to apply security controls to a group of IPs or DNS names.
+
+>`NetworkSets` and `GlobalNetworkSets` resources available in both Calico OSS and Calico Enterprise. However, this example uses `tier` attribute of Calico Enterprise network policy.
+
+Deploy a `GlobalNetworkSet` that represents public networks and policy that targets it.
+
+```bash
+# deploy netset
+kubectl apply -f demo/40-netsets/calico.public-nets.yaml
+# deploy policy
+kubectl apply -f demo/40-netsets/calico.deny-public-nets-egress.yaml
+
+# test centos pod access to public IPs
+PUB_IP=$(dig +short www.apple.com | tail -n1)
+kubectl -n ns1 exec -t centos -- sh -c "ping -c2 $PUB_IP"
+kubectl -n ns1 exec -t centos -- sh -c 'curl -m 5 -sI http://www.google.com 2>/dev/null | grep -i http'
 ```
 
 ## DNS policy
@@ -156,7 +164,7 @@ Deploy DNS policy.
 
 ```bash
 # deploy policy
-kubectl apply -f demo/50-dns-policy/calico.allow-dns-egress.yaml
+kubectl apply -f demo/50-dns-policy/calico.allow-google-dns-egress.yaml
 
 # test centos pod access to google DNS
 # egress to Google DNS should be allowed
@@ -176,7 +184,7 @@ Deploy a `GlobalAlert` that watches any changes to `NetworkSets`.
 kubectl apply -f demo/60-globalalerts/galert.policy.globalnetworkset.yaml
 
 # change existing global network set, then check alerts UI in Calico Enterprise Manager
-sed -e '/1.0.0.0\/8/{d;}' demo/30-netsets/calico.public-nets.yaml | kubectl apply -f -
+sed -e '/1.0.0.0\/8/{d;}' demo/40-netsets/calico.public-nets.yaml | kubectl apply -f -
 ```
 
 ![Calico global alerts](img/global-alerts.png)
