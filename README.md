@@ -180,11 +180,17 @@ Calico provides alerting capability based on `flow logs`, `audit logs`, and `DNS
 Deploy a `GlobalAlert` that watches any changes to `NetworkSets`.
 
 ```bash
-# deploy global alert
+# deploy global alerts
 kubectl apply -f demo/60-globalalerts/galert.policy.globalnetworkset.yaml
+kubectl apply -f demo/60-globalalerts/galert.dns.match.yaml
 
 # change existing global network set, then check alerts UI in Calico Enterprise Manager
 sed -e '/1.0.0.0\/8/{d;}' demo/40-netsets/calico.public-nets.yaml | kubectl apply -f -
+
+# change DNS log flush interval to speed up alert trigger
+kubectl patch felixconfiguration.p default -p '{"spec":{"dnsLogsFlushInterval":"10s"}}'
+# generate a few requests to www.apple.com domain
+for i in {1..3}; do kubectl -n ns1 exec -t centos -- sh -c 'curl -m 5 -sI http://www.apple.com 2>/dev/null | grep -i http'; done
 ```
 
 ![Calico global alerts](img/global-alerts.png)

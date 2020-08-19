@@ -1,0 +1,16 @@
+apiVersion: projectcalico.org/v3
+kind: GlobalAlert
+metadata:
+  name: dns.apple-access
+spec:
+  description: "Pod attempted to access apple.com domain"
+  summary: "[dns] pod ${client_namespace}/${client_name_aggr} attempted to access '${qname}'"
+  severity: 100
+  dataSet: dns
+  period: 5m
+  lookback: 10m
+  query: '(qname = "www.apple.com" OR qname = "apple.com")'
+  aggregateBy: [client_namespace, client_name_aggr, qname]
+  metric: count
+  condition: gt
+  threshold: 0
