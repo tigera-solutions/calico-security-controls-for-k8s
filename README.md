@@ -194,3 +194,38 @@ for i in {1..3}; do kubectl -n ns1 exec -t centos -- sh -c 'curl -m 5 -sI http:/
 ```
 
 ![Calico global alerts](img/global-alerts.png)
+
+## Compliance reports
+
+Calico Enterprise provides [compliance reports](https://docs.tigera.io/security/compliance-reports/overview) and a dashboard so you can easily assess Kubernetes workloads for regulatory compliance.
+This feature uses `GlobalReport` resource to trigger report generation on a scheduled basis. There are predefined types of compliance reports, such as `inventory`, `network-access`, and `policy-audit`. One can specify which nodes to include in the report, as well as manually trigger the report generation.
+
+Deploy `GlobalReport` resources.
+
+```bash
+kubectl apply -f demo/70-globalreports/hourly-cluster-inventory.yaml
+kubectl apply -f demo/70-globalreports/hourly-cluster-networkacess.yaml
+kubectl apply -f demo/70-globalreports/hourly-cluster-policy-audit.yaml
+kubectl apply -f demo/70-globalreports/daily-cis-results.yaml
+```
+
+### Manually execute a specific report
+
+To trigger the generation of a particular compliance report on demand, use `demo/70-globalreports/compliance-reporter-template.yaml` file to set the report name in defined `TIGERA_COMPLIANCE_REPORT_NAME` environment variable, then generate the YAML definition for a helper Pod, and deploy the Pod.
+
+```bash
+# remove compliance-reporter definition if it already exists
+rm demo/70-globalreports/compliance-reporter.yaml
+
+# chahge TIGERA_COMPLIANCE_REPORT_NAME env var in compliance-reporter-template.yaml if you want to copy/paste code below to exec a specific report
+COMPLIANCE_REPORTER_TOKEN=$(kubectl get secrets -n tigera-compliance | grep 'tigera-compliance-reporter-token*' | awk '{print $1;}')
+sed -e "s?<COMPLIANCE_REPORTER_TOKEN>?$COMPLIANCE_REPORTER_TOKEN?g" demo/70-globalreports/compliance-reporter-template.yaml > demo/70-globalreports/compliance-reporter.yaml
+# deploy helper Pod to generate the report
+kubectl apply -f demo/70-globalreports/compliance-reporter.yaml
+```
+
+>If you want to repeat manual generation of a compliance report, make sure to remove `run-reporter-custom` pod from `tigera-compliance` namespace.
+
+```bash
+kubectl -n tigera-compliance delete po run-reporter-custom
+```
