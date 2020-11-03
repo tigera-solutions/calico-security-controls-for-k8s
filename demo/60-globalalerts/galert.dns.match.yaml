@@ -7,7 +7,7 @@ spec:
   description: "Pod attempted to access restricted domain"
   summary: "[dns] pod ${client_namespace}/${client_name_aggr} attempted to access '${qname}'"
   severity: 100
-  dataSet: flows
+  dataSet: dns
   period: 5m
   lookback: 5m
   query: '(qname = "put.restricted.domain.com" OR qname = "restricted.domain.com")'
@@ -27,7 +27,7 @@ spec:
   severity: 100
   dataSet: dns
   period: 1m
-  lookback: 5m
+  lookback: 1m
   query: '(qname = "www.apple.com" OR qname = "apple.com")'
   aggregateBy: [client_namespace, client_name_aggr, qname]
   metric: count

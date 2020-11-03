@@ -101,10 +101,17 @@ kubectl create sa paul
 # configure role and rolebinding
 kubectl create clusterrolebinding paul-admin-access --clusterrole tigera-network-admin --serviceaccount default:paul
 
-# configure 'sally' service account - has limited access
+# configure 'sally' service account - has security team access
 kubectl create sa sally
+# configure 'david' service account - has infra/platform team access
+kubectl create sa david
+# configure 'samantha' service account - has dev team admin access
+kubectl create sa samantha
+# configure 'bob' service account - has dev team access
+kubectl create sa bob
 # configure role and rolebinding
-kubectl create -f demo/20-rbac/security-roles-rolebindings.yaml
+# kubectl create -f demo/20-rbac/security-roles-rolebindings.yaml
+kubectl create -f demo/20-rbac/roles-rolebindings.yaml
 
 # deploy additional role and rolebinding to allow sally access k8s net policies
 kubectl create -f demo/20-rbac/k8s.net-policy-access-roles-rolebindings.yaml
@@ -156,6 +163,19 @@ kubectl -n ns1 exec -t centos -- sh -c "ping -c2 $PUB_IP"
 kubectl -n ns1 exec -t centos -- sh -c 'curl -m 5 -sI http://www.google.com 2>/dev/null | grep -i http'
 ```
 
+### Global Threatfeeds
+
+Calico Enterprise provides `GlobalThreatFeed` resource that represents a feed of threat intelligence used for security purposes. The threat feeds can be either a collection of IP prefixes or domain names.
+
+Deploy a `GlobalThreatFeed` that represents publicly managed list of feodo IP prefixes.
+
+```bash
+# deploy global threat feed
+kubectl apply -f demo/40-netsets/global-threatfeed-ipfeodo.yaml
+```
+
+Navigate to network sets view and review the `GlobalNetworkSet` that is automatically created from the threat feed.
+
 ## DNS policy
 
 Calico DNS policies allow to control egress using DNS names. The DNS names could be either directly specified in the policy or in a network set resource.
@@ -181,8 +201,12 @@ Deploy a `GlobalAlert` that watches any changes to `NetworkSets`.
 
 ```bash
 # deploy global alerts
+# dataset: audit
 kubectl apply -f demo/60-globalalerts/galert.policy.globalnetworkset.yaml
+# dataset: dns
 kubectl apply -f demo/60-globalalerts/galert.dns.match.yaml
+# dataset: flows
+kubectl apply -f demo/60-globalalerts/unsanctioned-access-alert.yaml
 
 # change existing global network set, then check alerts UI in Calico Enterprise Manager
 sed -e '/1.0.0.0\/8/{d;}' demo/40-netsets/calico.public-nets.yaml | kubectl apply -f -
@@ -191,7 +215,14 @@ sed -e '/1.0.0.0\/8/{d;}' demo/40-netsets/calico.public-nets.yaml | kubectl appl
 kubectl patch felixconfiguration.p default -p '{"spec":{"dnsLogsFlushInterval":"10s"}}'
 # generate a few requests to www.apple.com domain
 for i in {1..3}; do kubectl -n ns1 exec -t centos -- sh -c 'curl -m 5 -sI http://www.apple.com 2>/dev/null | grep -i http'; done
+
+# allow centos pod to communicate with nginx pods in ns2
+kubectl apply -f demo/60-globalalerts/calico.centos-to-ns2-nginx.yaml
+# access nginx in ns2 from centos pod
+for i in {1..3}; do kubectl -n ns1 exec -t centos -- sh -c 'curl -m3 -sI http://nginx-svc.ns2 2>/dev/null | grep -i http'; done
 ```
+
+Navigate to Alerts view to see the generated alerts.
 
 ![Calico global alerts](img/global-alerts.png)
 

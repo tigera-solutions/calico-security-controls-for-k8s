@@ -1,0 +1,27 @@
+# allow egress from centos in ns1 to nginx in ns2
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: security.allow-centos-to-ns2-nginx-egress
+  namespace: ns1
+spec:
+  tier: security
+  order: 900
+  selector: "app == 'centos'"
+  types:
+  - Egress
+  egress:
+  - action: Allow
+    protocol: TCP
+    source: {}
+    destination:
+      selector: "app == 'nginx'"
+      namespaceSelector: "compliance == 'enforced'"
+      ports:
+      - '80'
+  - action: Allow
+    protocol: UDP
+    destination:
+      ports:
+      - '53'
+  - action: Pass

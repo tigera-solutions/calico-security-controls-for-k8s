@@ -8,11 +8,13 @@ spec:
   selector:
     matchLabels:
       app: nginx
+      security: strict
   replicas: 2
   template:
     metadata:
       labels:
         app: nginx
+        security: strict
     spec:
       containers:
       - name: nginx

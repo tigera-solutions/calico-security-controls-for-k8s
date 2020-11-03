@@ -4,7 +4,7 @@ metadata:
   name: security.allow-kube-dns
 spec:
   tier: security
-  order: 200
+  order: 1000
   selector: all()
   types:
   - Egress

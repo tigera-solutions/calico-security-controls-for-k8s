@@ -1,0 +1,408 @@
+# allows to list necessary resource to get Enterprise Manager UI rendered
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: tigera-ui-access
+rules:
+- apiGroups: ["networking.k8s.io","extensions",""]
+  resources: ["networkpolicies","namespaces"]
+  verbs: ["get","watch","list"]
+  # allows to watch all tiers
+- apiGroups: ["projectcalico.org"]
+  resources: ["tiers"]
+  verbs: ["watch"]
+- apiGroups: ["projectcalico.org"]
+  resources: ["tier.networkpolicies","tier.globalnetworkpolicies","tier.stagedkubernetesnetworkpolicies","stagedkubernetesnetworkpolicies","globalnetworksets","networksets"]
+  verbs: ["get","watch","list"]
+---
+# allows access to UI components to show flow logs, audit logs, stats
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: tigera-ui-traffic-stats
+rules:
+- apiGroups: [""]
+  resources: ["services/proxy"]
+  resourceNames: ["https:tigera-api:8080","calico-node-prometheus:9090","https:cnx-api:8080"]
+  verbs: ["get","create"]
+# Access to flow logs, audit logs, and statistics
+- apiGroups: ["lma.tigera.io"]
+  resources: ["*"]
+  # access to all resources
+  resourceNames: ["*"]
+  # access to specific resources
+  # resourceNames: ["flows","audit*","events","dns"]
+  # resourceNames: ["flows","audit_ee","audit_kube","events","dns","kibana_login","elasticsearch_superuser"]
+  verbs: ["get"]
+- apiGroups: ["projectcalico.org"]
+  resources: ["authenticationreviews","authorizationreviews"]
+  verbs: ["create"]
+# must have to see policy board
+- apiGroups: ["projectcalico.org"]
+  resources: ["clusterinformations"]
+  verbs: ["get","list"]
+---
+# allows crud access to Calico GlobalAlert resources.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: read-write-globalalerts
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: globalalerts
+    tigera.io/access: read-write
+    tigera.io/rbac-id: rdwr-galerts
+  annotations:
+    tigera.io/description: "read-write GlobalAlert resources in Tier {{ TierName }}"
+rules:
+# CRUD access for Calico GlobalAlert resources.
+- apiGroups: ["projectcalico.org"]
+  resources: ["globalalerts","globalalerts","globalalerts/status","globalalerttemplates"]
+  verbs: ["*"]
+---
+# allows read access to Calico GlobalAlert resources.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: read-globalalerts
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: globalalerts
+    tigera.io/access: read
+    tigera.io/rbac-id: rd-galerts
+  annotations:
+    tigera.io/description: "read GlobalAlert resources in Tier {{ TierName }}"
+rules:
+# Read access for Calico GlobalAlert resources.
+- apiGroups: ["projectcalico.org"]
+  resources: ["globalalerts","globalalerts","globalalerts/status","globalalerttemplates"]
+  verbs: ["get","watch","list"]
+---
+# allows access to global reports
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-global-reports
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: globalreports.content
+    tigera.io/scope: global
+    tigera.io/access: read
+  annotations:
+    tigera.io/description: "view all details of compliance reports"
+rules:
+# To view full report, need get access to the underlying GlobalReport resource *and* the corresponding
+# GlobalReportType.
+- apiGroups: ["projectcalico.org"]
+  resources: ["globalreports"]
+  resourceNames: ["*"]
+  verbs: ["get"]
+- apiGroups: ["projectcalico.org"]
+  resources: ["globalreporttypes"]
+  resourceNames: ["*"]
+  verbs: ["get"]
+---
+# allows full access to policies in security tier only
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: tier-security-admin
+rules:
+- apiGroups: ["projectcalico.org"]
+  resources: ["tiers"]
+  resourceNames: ["security","platform","default"]
+  verbs: ["get"]
+- apiGroups: ["projectcalico.org"]
+  resources: ["tier.networkpolicies","tier.globalnetworkpolicies","tier.stagedglobalnetworkpolicies","tier.stagednetworkpolicies","tier.kubernetesnetworkpolicies","tier.stagedkubernetesnetworkpolicies","networksets"]
+  resourceNames: ["security.*"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["projectcalico.org"]
+  resources: ["globalnetworksets","globalthreatfeeds"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+# allows full access to policies in platform tier only
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: tier-platform-admin
+rules:
+- apiGroups: ["projectcalico.org"]
+  resources: ["tiers"]
+  resourceNames: ["platform"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["projectcalico.org"]
+  resources: ["tier.networkpolicies","tier.globalnetworkpolicies","tier.stagedglobalnetworkpolicies","tier.stagednetworkpolicies","tier.kubernetesnetworkpolicies","tier.stagedkubernetesnetworkpolicies","networksets"]
+  resourceNames: ["platform.*"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["projectcalico.org"]
+  resources: ["globalthreatfeeds","globalnetworksets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch"]
+---
+# allows full access to policies in default tier
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: tier-default-admin
+rules:
+# allow to manage K8s network policies
+- apiGroups: ["networking.k8s.io","extensions",""]
+  resources: ["networkpolicies"]
+  verbs: ["get","list","watch","create","update","patch"]
+- apiGroups: ["projectcalico.org"]
+  resources: ["tiers"]
+  resourceNames: ["default"]
+  verbs: ["get","list","watch"]
+- apiGroups: ["projectcalico.org"]
+  resources: ["tier.networkpolicies","tier.globalnetworkpolicies","tier.stagedglobalnetworkpolicies","tier.stagednetworkpolicies","tier.kubernetesnetworkpolicies","tier.stagedkubernetesnetworkpolicies"]
+  resourceNames: ["default.*"]
+  verbs: ["*"]
+- apiGroups: ["projectcalico.org"]
+  resources: ["globalnetworksets","networksets"]
+  verbs: ["get","list","watch","create","update","patch"]
+---
+# allows dev access to policies in default tier
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: tier-default-dev
+rules:
+# allow to manage K8s network policies
+- apiGroups: ["networking.k8s.io","extensions",""]
+  resources: ["networkpolicies"]
+  verbs: ["get","list","watch","create","update","patch"]
+- apiGroups: ["projectcalico.org"]
+  resources: ["tiers"]
+  resourceNames: ["default"]
+  verbs: ["get","list","watch"]
+- apiGroups: ["projectcalico.org"]
+  resources: ["tier.stagedglobalnetworkpolicies","tier.stagednetworkpolicies","tier.stagedkubernetesnetworkpolicies"]
+  resourceNames: ["default.*"]
+  verbs: ["get","list","watch","create","update","patch","delete"]
+- apiGroups: ["projectcalico.org"]
+  resources: ["globalnetworksets","networksets"]
+  verbs: ["get","list","watch"]
+---
+# allows view access to policies in default tier
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: tier-default-reader
+rules:
+- apiGroups: ["projectcalico.org"]
+  resources: ["tiers"]
+  resourceNames: ["default"]
+  verbs: ["get","list","watch"]
+- apiGroups: ["projectcalico.org"]
+  resources: ["tier.networkpolicies","tier.globalnetworkpolicies","tier.stagedglobalnetworkpolicies","tier.stagednetworkpolicies","tier.kubernetesnetworkpolicies","tier.stagedkubernetesnetworkpolicies","networksets"]
+  resourceNames: ["default.*"]
+  verbs: ["get","list","watch"]
+---
+
+##############################################
+# allow to list all necessary resource for Manager UI to render
+##############################################
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: tmui-needed-lister-access
+subjects:
+- kind: ServiceAccount
+  name: sally
+  namespace: default
+- kind: ServiceAccount
+  name: david
+  namespace: default
+- kind: ServiceAccount
+  name: samantha
+  namespace: default
+- kind: ServiceAccount
+  name: bob
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: tigera-ui-access
+  apiGroup: rbac.authorization.k8s.io
+---
+
+##############################################
+# grant access to API in Enterprise Manager UI
+##############################################
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: tmui-traffic-stats-access
+subjects:
+- kind: ServiceAccount
+  name: sally
+  namespace: default
+- kind: ServiceAccount
+  name: david
+  namespace: default
+- kind: ServiceAccount
+  name: samantha
+  namespace: default
+- kind: ServiceAccount
+  name: bob
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: tigera-ui-traffic-stats
+  apiGroup: rbac.authorization.k8s.io
+---
+####################################################
+
+##############################################
+# grant read-write access to global alerts
+##############################################
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: globalalerts-read-write-access
+subjects:
+- kind: ServiceAccount
+  name: sally
+  namespace: default
+- kind: ServiceAccount
+  name: david
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: read-write-globalalerts
+  apiGroup: rbac.authorization.k8s.io
+---
+####################################################
+
+##############################################
+# grant read access to global alerts
+##############################################
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: globalalerts-read-access
+subjects:
+- kind: ServiceAccount
+  name: samantha
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: read-globalalerts
+  apiGroup: rbac.authorization.k8s.io
+---
+####################################################
+
+##############################################
+# grant read access to global reports
+##############################################
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: globalreports-read-access
+subjects:
+- kind: ServiceAccount
+  name: sally
+  namespace: default
+- kind: ServiceAccount
+  name: david
+  namespace: default
+- kind: ServiceAccount
+  name: samantha
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: tigera-read-global-reports
+  apiGroup: rbac.authorization.k8s.io
+---
+####################################################
+
+##############################################
+# grant full access to security tier
+##############################################
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: security-tier-full-access
+subjects:
+- kind: ServiceAccount
+  name: sally
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: tier-security-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+####################################################
+
+##############################################
+# grant full access to platform tier
+##############################################
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: platform-tier-full-access
+subjects:
+- kind: ServiceAccount
+  name: sally
+  namespace: default
+- kind: ServiceAccount
+  name: david
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: tier-platform-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+####################################################
+
+##############################################
+# grant full access to default tier
+##############################################
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: default-tier-full-access
+subjects:
+- kind: ServiceAccount
+  name: samantha
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: tier-default-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+####################################################
+
+##############################################
+# grant dev only access to default tier
+##############################################
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: default-tier-dev-access
+subjects:
+- kind: ServiceAccount
+  name: bob
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: tier-default-dev
+  apiGroup: rbac.authorization.k8s.io
+---
+####################################################
+
+##############################################
+# grant view only access to default tier
+##############################################
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: default-tier-reader-access
+subjects:
+- kind: ServiceAccount
+  name: sally
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: tier-default-reader
+  apiGroup: rbac.authorization.k8s.io
+---
+####################################################

@@ -12,5 +12,5 @@ spec:
     image: centos:latest
     # Just spin & wait forever
     command: [ "/bin/bash", "-c", "--" ]
-    args: [ "while true; do curl http://nginx-svc; sleep 3; done;" ]
+    args: [ "while true; do curl -m5 http://nginx-svc; sleep 3; done;" ]
     resources: {}

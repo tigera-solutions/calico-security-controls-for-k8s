@@ -1,0 +1,37 @@
+apiVersion: projectcalico.org/v3
+kind: GlobalAlertTemplate
+metadata:
+  name: network.lateral.access
+spec:
+  description: "Alerts when pods with a specific label (security=strict) accessed by other workloads within the cluster"
+  summary: "[flows] [lateral movement] ${source_namespace}/${source_name_aggr} has accessed pod with label security=strict"
+  severity: 100
+  period: 5m
+  lookback: 5m
+  dataSet: flows
+  query: '"dest_labels.labels"="security=strict" AND "source_namespace"!="ns2" AND proto=tcp AND action=allow AND reporter=dst'
+  aggregateBy: [source_namespace, source_name_aggr]
+  field: num_flows
+  metric: sum
+  condition: gt
+  threshold: 0
+---
+
+apiVersion: projectcalico.org/v3
+kind: GlobalAlert
+metadata:
+  name: network.lateral.access
+spec:
+  description: "Alerts when pods with a specific label (security=strict) accessed by other workloads within the cluster"
+  summary: "[flows] [lateral movement] ${source_namespace}/${source_name_aggr} has accessed pod with label security=strict"
+  severity: 100
+  period: 1m
+  lookback: 1m
+  dataSet: flows
+  query: '"dest_labels.labels"="security=strict" AND "source_namespace"!="ns2" AND proto=tcp AND action=allow AND reporter=dst'
+  aggregateBy: [source_namespace, source_name_aggr]
+  field: num_flows
+  metric: sum
+  condition: gt
+  threshold: 0
+---
