@@ -260,3 +260,54 @@ kubectl apply -f demo/70-globalreports/compliance-reporter.yaml
 ```bash
 kubectl -n tigera-compliance delete po run-reporter-custom
 ```
+
+## Anomaly detection
+
+Anomaly detection capabilities are a part of Calico Enterprise. Calico Enterprise comes with several machine learning jobs used in detecting anomalous activity in the cluster. Refer to [enable anomaly detection](https://docs.tigera.io/security/threat-detection-and-prevention/anomaly-detection/enabling) documentation for details on how to enable the feature.
+
+>In order to start using anomaly detection reliably, you need to have at least 4-6 hours of flow logs data collected.
+
+To test a few use cases, follow these steps:
+
+- Open Kibana application and login into it. Default Kibana user is `elastic`.
+
+```bash
+# get elastic user password
+kubectl -n tigera-elasticsearch get secret tigera-secure-es-elastic-user -o go-template='{{.data.elastic | base64decode}}' && echo
+```
+
+- Navigate to `Machine Learning` tab in Kibana nav panel. Then click `Manage Jobs` button.
+- Start data feed for a few jobs, e.g. `cluster.ip_sweep_pods`, `cluster.port_scan_pods`.
+- Once data feed processes all entries and sets the base line, simulate a few activities that would resemble port scan or port sweep attacks in the cluster.
+
+```bash
+# deploy a utility pod
+kubectl apply -f demo/80-anomaly-detection/pod-netshoot.yaml
+
+# get IP address from one of the pods running in the cluster
+kubectl -n ns1 get po -owide
+POD_IP='<pod_ip>'
+
+# open shell into the netshoot pod
+kubectl exec -it netshoot -- bash
+
+############################
+# simulate pod scan attack
+############################
+# use collected IP address to scan ports of the pod
+nmap -p 1-10000 $POD_IP
+
+############################
+# simulate pod sweep attack
+############################
+# get IP of one of the pod and set subnet to /24
+IP_LIST=$(ip addr | awk '/inet / {print $2}'| cut -d / -f1 |tail -n 1)/24
+# get all IPs from the subnet
+# if IP_LIST has only one IP, find subnet that has more pods and use that instead
+HOST_LIST=$(nmap -n -sn $IP_LIST | awk '/for /{print $5}')
+# run IP sweep
+PORT_LIST=$(nmap -Pn $HOST_LIST)
+echo $PORT_LIST
+```
+
+Once you simulate the attacks, run the machine learning jobs again. When they finish review the anomaly scores using `Anomaly Explorer` view in Kibana. If detected anomalies get a score of 75 or higher, an alert will be generated and can be viewed in the Alerts view of Tigera Enterprise Manager.
