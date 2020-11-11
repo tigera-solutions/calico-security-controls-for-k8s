@@ -283,9 +283,10 @@ kubectl -n tigera-elasticsearch get secret tigera-secure-es-elastic-user -o go-t
 ```bash
 # deploy a utility pod
 kubectl apply -f demo/80-anomaly-detection/pod-netshoot.yaml
+kubectl apply -f demo/80-anomaly-detection/nginx-stack.yaml
 
 # get IP address from one of the pods running in the cluster
-kubectl -n ns1 get po -owide
+kubectl get po -owide
 POD_IP='<pod_ip>'
 
 # open shell into the netshoot pod
