@@ -1,11 +1,10 @@
 apiVersion: projectcalico.org/v3
-kind: NetworkPolicy
+kind: GlobalNetworkPolicy
 metadata:
   name: security.allow-google-dns-egress
-  namespace: ns1
 spec:
   tier: security
-  selector: "projectcalico.org/namespace == 'ns1'"
+  selector: projectcalico.org/namespace == "ns1"
   order: 90
   types:
     - Egress
@@ -17,8 +16,3 @@ spec:
       domains:
       - '*.google.com'
       - 'google.com'
-  - action: Deny
-    protocol: TCP
-    source: {}
-    destination:
-      selector: type == "public"

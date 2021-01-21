@@ -2,13 +2,26 @@
 
 This guide contains example demo scenarios to showcase security controls for Kubernetes using Calico.
 
-## high level topics
+## High-level topics
 
 - Kubernetes (k8s) network policies and Calico network policies
 - Default deny policy
 - Kubernetes RBAC
 - Calico security controls: `tiers`, `network policies`, `network sets`, `threat feeds`, `alerts`, `compliance reports`
 - Intrusion, anomaly, and threat detection
+
+## Configure logging interval for Calico Enterprise
+
+If using Calico Enterprise, configure logging settings to quicker view the results in demo scenarios.
+
+```bash
+# set default flush interval for the flow logs (default: 300s)
+kubectl patch felixconfiguration.p default -p '{"spec":{"flowLogsFlushInterval":"10s"}}'
+# for more detailed logs set flowLogsFileAggregationKindForAllowed=1 (default: 2)
+kubectl patch felixconfiguration.p default -p '{"spec":{"flowLogsFileAggregationKindForAllowed":1}}'
+# set flush interval for DNS logs
+kubectl patch felixconfiguration.p default -p '{"spec":{"dnsLogsFlushInterval":"10s"}}'
+```
 
 ## Deploy demo application
 
@@ -34,13 +47,17 @@ Deploy k8s `default-deny` policy that applies to `ns1` namespace.
 >Once you deploy `default-deny` policy, you **must** include both `Ingress` and `Egress` type rules into policies to allow traffic.
 
 ```bash
-# deploy policy
+# deploy staged default-deny
+kubectl apply -f demo/10-k8s-n-calico-policy/calico.staged.default-deny.yaml
+# deploy namespaced default-deny
 kubectl apply -f demo/10-k8s-n-calico-policy/k8s.deny-all.yaml
 
-# test nginx access in ns1
-kubectl -n ns1 exec -t centos -- sh -c 'SVC=nginx-svc; curl -m 5 -sI http://$SVC 2>/dev/null | grep -i http'
-# test nginx access in ns2
-kubectl -n ns2 exec -t netshoot -- sh -c 'SVC=nginx-svc; curl -m 5 -sI http://$SVC 2>/dev/null | grep -i http'
+# test pod to pod access within namespaces
+kubectl -n ns1 exec -t centos -- sh -c 'SVC=nginx-svc; curl -m 2 -sI http://$SVC 2>/dev/null | grep -i http'
+kubectl -n ns2 exec -t netshoot -- sh -c 'SVC=nginx-svc; curl -m 2 -sI http://$SVC 2>/dev/null | grep -i http'
+# test pod to pod access across namespaces
+kubectl -n ns1 exec -t centos -- sh -c 'SVC=nginx-svc; curl -m 2 -sI http://$SVC.ns2 2>/dev/null | grep -i http'
+kubectl -n ns2 exec -t netshoot -- sh -c 'SVC=nginx-svc; curl -m 2 -sI http://$SVC.ns1 2>/dev/null | grep -i http'
 ```
 
 Deploy Calico global policy to allow k8s DNS access
@@ -152,15 +169,19 @@ Calico offers `NetworkSets` and `GlobalNetworkSets` resources to apply security 
 Deploy a `GlobalNetworkSet` that represents public networks and policy that targets it.
 
 ```bash
-# deploy netset
+# deploy pod
+kubectl apply -f app/pod-centos.yaml
+
+# deploy netsets
 kubectl apply -f demo/40-netsets/calico.public-nets.yaml
+kubectl apply -f demo/40-netsets/allowed-domains-netset.yaml
 # deploy policy
 kubectl apply -f demo/40-netsets/calico.deny-public-nets-egress.yaml
 
 # test centos pod access to public IPs
 PUB_IP=$(dig +short www.apple.com | tail -n1)
-kubectl -n ns1 exec -t centos -- sh -c "ping -c2 $PUB_IP"
-kubectl -n ns1 exec -t centos -- sh -c 'curl -m 5 -sI http://www.google.com 2>/dev/null | grep -i http'
+kubectl exec -t centos -- sh -c "ping -c2 $PUB_IP"
+kubectl exec -t centos -- sh -c 'curl -m 5 -sI http://www.google.com 2>/dev/null | grep -i http'
 ```
 
 ### Global Threatfeeds
@@ -188,9 +209,9 @@ kubectl apply -f demo/50-dns-policy/calico.allow-google-dns-egress.yaml
 
 # test centos pod access to google DNS
 # egress to Google DNS should be allowed
-kubectl -n ns1 exec -t centos -- sh -c 'curl -m 5 -sI http://www.google.com 2>/dev/null | grep -i http'
+kubectl -n ns1 exec -t centos -- sh -c 'curl -m 2 -sI http://www.google.com 2>/dev/null | grep -i http'
 # egress to Apple DNS should be denied
-kubectl -n ns1 exec -t centos -- sh -c 'curl -m 5 -sI http://www.apple.com 2>/dev/null | grep -i http'
+kubectl -n ns1 exec -t centos -- sh -c 'curl -m 2 -sI http://www.apple.com 2>/dev/null | grep -i http'
 ```
 
 ## Global alerts
@@ -234,9 +255,12 @@ This feature uses `GlobalReport` resource to trigger report generation on a sche
 Deploy `GlobalReport` resources.
 
 ```bash
-kubectl apply -f demo/70-globalreports/hourly-cluster-inventory.yaml
-kubectl apply -f demo/70-globalreports/hourly-cluster-networkacess.yaml
-kubectl apply -f demo/70-globalreports/hourly-cluster-policy-audit.yaml
+kubectl apply -f demo/70-globalreports/cluster-inventory.yaml
+kubectl apply -f demo/70-globalreports/cluster-networkacess.yaml
+kubectl apply -f demo/70-globalreports/cluster-policy-audit.yaml
+kubectl apply -f demo/70-globalreports/demo-inventory.yaml
+kubectl apply -f demo/70-globalreports/demo-networkacess.yaml
+kubectl apply -f demo/70-globalreports/demo-policy-audit.yaml
 kubectl apply -f demo/70-globalreports/daily-cis-results.yaml
 ```
 
@@ -287,7 +311,7 @@ kubectl apply -f demo/80-anomaly-detection/nginx-stack.yaml
 
 # get IP address from one of the pods running in the cluster
 kubectl get po -owide
-POD_IP='<pod_ip>'
+POD_IP=$(kubectl get po --selector app=centos -o jsonpath='{.items[*].status.podIP}')
 
 # open shell into the netshoot pod
 kubectl exec -it netshoot -- bash
@@ -312,3 +336,59 @@ echo $PORT_LIST
 ```
 
 Once you simulate the attacks, run the machine learning jobs again. When they finish review the anomaly scores using `Anomaly Explorer` view in Kibana. If detected anomalies get a score of 75 or higher, an alert will be generated and can be viewed in the Alerts view of Tigera Enterprise Manager.
+
+## Cleanup
+
+```bash
+# delete policies
+# kubectl delete -f demo/10-k8s-n-calico-policy/calico.allow-kube-dns.yaml
+kubectl delete -f demo/10-k8s-n-calico-policy/k8s.deny-all.yaml
+kubectl delete -f demo/10-k8s-n-calico-policy/k8s.allow-nginx-ingress.yaml
+kubectl delete -f demo/10-k8s-n-calico-policy/calico.deny-all.yaml
+kubectl delete -f demo/10-k8s-n-calico-policy/calico.allow-nginx-ingress.yaml
+kubectl delete -f demo/10-k8s-n-calico-policy/calico.log-access.yaml
+kubectl delete -f demo/30-tier/calico.log-access.yaml
+kubectl delete -f demo/30-tier/calico.allow-kube-dns.yaml
+kubectl delete -f demo/50-dns-policy/calico.allow-google-dns-egress.yaml
+kubectl delete -f demo/60-globalalerts/calico.centos-to-ns2-nginx.yaml
+# delete tier
+kubectl delete -f demo/30-tier/tier-security.yaml
+
+# delete RBAC
+kubectl delete sa paul
+kubectl delete clusterrolebinding paul-admin-access --clusterrole tigera-network-admin --serviceaccount default:paul
+kubectl delete sa sally
+kubectl delete sa david
+kubectl delete sa samantha
+kubectl delete sa bob
+kubectl delete -f demo/20-rbac/roles-rolebindings.yaml
+kubectl delete -f demo/20-rbac/k8s.net-policy-access-roles-rolebindings.yaml
+
+# delete Netsets and Threatfeed
+kubectl delete -f demo/40-netsets/allowed-domains-netset.yaml
+kubectl delete -f demo/40-netsets/calico.public-nets.yaml
+kubectl delete -f demo/40-netsets/calico.deny-public-nets-egress.yaml
+kubectl delete -f demo/40-netsets/global-threatfeed-ipfeodo.yaml
+
+# delete Global Alerts
+kubectl delete -f demo/60-globalalerts/galert.policy.globalnetworkset.yaml
+kubectl delete -f demo/60-globalalerts/galert.dns.match.yaml
+kubectl delete -f demo/60-globalalerts/unsanctioned-access-alert.yaml
+
+# delete global reports
+kubectl delete -f demo/70-globalreports/cluster-inventory.yaml
+kubectl delete -f demo/70-globalreports/cluster-networkacess.yaml
+kubectl delete -f demo/70-globalreports/cluster-policy-audit.yaml
+kubectl delete -f demo/70-globalreports/demo-inventory.yaml
+kubectl delete -f demo/70-globalreports/demo-networkacess.yaml
+kubectl delete -f demo/70-globalreports/demo-policy-audit.yaml
+kubectl delete -f demo/70-globalreports/daily-cis-results.yaml
+
+# delete anomaly detection demo
+kubectl delete -f demo/80-anomaly-detection/pod-netshoot.yaml
+kubectl delete -f demo/80-anomaly-detection/nginx-stack.yaml
+
+# delete apps
+kubectl delete -f app/ns1/
+kubectl delete -f app/ns2/
+```

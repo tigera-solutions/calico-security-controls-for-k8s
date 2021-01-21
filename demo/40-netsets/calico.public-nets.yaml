@@ -4,6 +4,7 @@ metadata:
   name: public-nets
   labels:
     type: public
+    list-type: cidr
 spec:
   nets:
   - 1.0.0.0/8

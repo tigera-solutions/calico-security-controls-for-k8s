@@ -4,7 +4,7 @@ metadata:
   name: default-deny
 spec:
   order: 2000
-  selector: "projectcalico.org/namespace == 'ns1' || projectcalico.org/namespace == 'ns2'"
+  selector: "projectcalico.org/namespace in {'ns1','ns2'}"
   types:
   - Ingress
   - Egress

@@ -1,0 +1,13 @@
+apiVersion: projectcalico.org/v3
+kind: GlobalReport
+metadata:
+  name: demo-policy-audit
+spec:
+  reportType: policy-audit
+  endpoints:
+    namespaces:
+      names: ["ns1","ns2"]
+  ## every top of hour: 0 * * * *
+  ## every 5 min: */5 * * * *
+  ## every 6 hours: 0 */6 * * *
+  schedule: '0 */8 * * *'

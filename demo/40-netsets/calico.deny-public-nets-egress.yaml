@@ -5,7 +5,8 @@ metadata:
 spec:
   tier: security
   # label on ns1 namespace
-  namespaceSelector: compliance == "open"
+  # namespaceSelector: compliance == "open"
+  selector: "projectcalico.org/namespace == 'default' && app == 'centos'"
   order: 100
   types:
     - Egress
@@ -14,7 +15,12 @@ spec:
     protocol: TCP
     source: {}
     destination:
-      selector: "type == 'public'"
+      selector: "type == 'public' && list-type == 'cidr'"
+  - action: Deny
+    protocol: ICMP
+    source: {}
+    destination:
+      selector: "type == 'public' && list-type == 'cidr'"
   # - action: Pass
   #   source: {}
   #   destination: {}

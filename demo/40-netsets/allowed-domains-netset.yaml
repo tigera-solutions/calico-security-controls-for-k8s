@@ -1,0 +1,10 @@
+kind: GlobalNetworkSet
+apiVersion: projectcalico.org/v3
+metadata:
+  name: allowed-external-domains
+  labels: 
+    domain: external
+spec:
+  allowedEgressDomains:
+  - '*.google.com'
+  - 'google.com'

@@ -1,0 +1,11 @@
+apiVersion: projectcalico.org/v3
+kind: StagedGlobalNetworkPolicy
+metadata:
+  name: default-deny
+spec:
+  order: 2000
+  # target only these namespaces
+  selector: "projectcalico.org/namespace == 'ns1' || projectcalico.org/namespace == 'ns2'"
+  types:
+  - Ingress
+  - Egress
