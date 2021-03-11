@@ -1,0 +1,14 @@
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: security.pass-traffic
+spec:
+  tier: security
+  selector: all()
+  order: 2000
+  types:
+    - Egress
+  egress:
+  - action: Pass
+    source: {}
+    destination: {}

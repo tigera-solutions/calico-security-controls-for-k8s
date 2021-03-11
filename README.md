@@ -220,8 +220,10 @@ Calico DNS policies allow to control egress using DNS names. The DNS names could
 Deploy DNS policy.
 
 ```bash
-# deploy policy
+# deploy dns policy
 kubectl apply -f demo/50-dns-policy/calico.allow-external-dns-egress.yaml
+# deploy a policy to pass any unmatched traffic downstream to the following tier
+kubectl apply -f demo/50-dns-policy/calico.pass-traffic.yaml
 
 # test centos pod access to google DNS
 # egress to Google DNS should be allowed

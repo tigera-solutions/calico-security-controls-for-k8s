@@ -4,7 +4,7 @@ metadata:
   name: security.allow-external-dns-egress
 spec:
   tier: security
-  selector: projectcalico.org/namespace == "dev"
+  selector: 'projectcalico.org/namespace == "dev" && app == "centos"'
   order: 90
   types:
     - Egress
@@ -24,3 +24,7 @@ spec:
       domains:
       - '*.google.com'
       - 'google.com'
+  # this rule only necessary if there is not policy that would pass all unmatched traffic to another tier
+  # - action: Pass
+  #   source: {}
+  #   destination: {}
