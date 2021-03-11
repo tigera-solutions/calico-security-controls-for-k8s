@@ -1,0 +1,185 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-cluster-scoped-user-uat
+aggregationRule:
+  clusterRoleSelectors:
+    - matchExpressions:
+        - key: tigera.io/rbac-id
+          operator: In
+          values:
+            # Uncomment to allow: access to the Tigera UI
+            - ui-access
+            # Uncomment to allow: view all tiers, and allow management of policies in all tiers (additional RBAC permissions required to specify which resources can be managed within the tier)
+            #- manage-all-tier
+            # Uncomment to allow: view tier default, and allow management of policies in this tier (additional RBAC permissions required to specify which resources can be managed within the tier)
+            - manage-tier-default
+            # Uncomment to allow: view tier platform, and allow management of policies in this tier (additional RBAC permissions required to specify which resources can be managed within the tier)
+            - manage-tier-platform
+            # Uncomment to allow: view tier security, and allow management of policies in this tier (additional RBAC permissions required to specify which resources can be managed within the tier)
+            # - manage-tier-security
+
+            # Uncomment to allow: read-write access for all globalalerts
+            # - rdwr-galerts
+            # Uncomment to allow: read access for all globalalerts
+            - rd-galerts
+
+            # Test specific report access. Must deploy corresponding roles.
+            # - summary-rep-daily-cis-results
+            # - details-rep-daily-cis-results
+            # Uncomment to allow: view all details of cluster and demo compliance reports
+            # - details-rep-cluster-demo
+            # Uncomment to allow: view all summary of cluster, demo, cis benchmarks compliance reports
+            - summary-rep-cluster-demo
+            # Uncomment to allow: view all details of all compliance reports
+            # - details-all-rep
+            # Uncomment to allow: view summary details of all compliance reports, and read access to all GlobalReport resources
+            # - summary-all-rep
+            # Uncomment to allow: view summary details of all compliance reports, and read-write access to all GlobalReport resources to manage report scheduling
+            #- rdwr-rep
+            # Uncomment to allow: view traffic statistics in the Tigera UI
+            - rd-traffic-statistics
+
+            # Uncomment to allow: read access for all elasticsearch indices for all-clusters
+            # - rd-all-es-all-cl
+            # Uncomment to allow: read access for elasticsearch indices with data for flow logs for all clusters
+            - rd-es-flows-all-cl
+            # Uncomment to allow: read access for elasticsearch indices with data for audit logs for all clusters
+            - rd-es-audits-all-cl
+            # Uncomment to allow: read access for elasticsearch indices with data for DNS logs for all clusters
+            - rd-es-dns-all-cl
+            # Uncomment to allow: read access for elasticsearch indices with data for intrusion detection events for all clusters
+            - rd-es-events-all-cl
+            # Uncomment to allow: read access for superuser elasticsearch for all clusters
+            - rd-es-superuser-all-cl
+            # Uncomment to allow: read access for elasticsearch indices with data for L7 logs for all clusters
+            - rd-es-l7-all-cl
+            # Uncomment to allow: read access for kibana API for all clusters
+            - kibana-access-all-cl
+
+            # Uncomment to allow: read GlobalNetworkPolicy resources in Tier default
+            - rd-gnp-tier-default
+            # Uncomment to allow: read StagedGlobalNetworkPolicy resources in Tier default
+            # - rd-sgnp-tier-default
+            # Uncomment to allow: read-write GlobalNetworkPolicy resources in Tier default
+            #- rdwr-gnp-tier-default
+            # Uncomment to allow: read-write StagedGlobalNetworkPolicy resources in Tier default
+            #- rdwr-sgnp-tier-default
+
+            # Uncomment to allow: read GlobalNetworkPolicy resources in Tier platform
+            - rd-gnp-tier-platform
+
+            # Uncomment to allow: read GlobalNetworkPolicy resources in Tier security
+            # - rd-gnp-tier-security
+            # Uncomment to allow: read StagedGlobalNetworkPolicy resources in Tier security
+            #- rd-sgnp-tier-security
+            # Uncomment to allow: read-write GlobalNetworkPolicy resources in Tier security
+            #- rdwr-gnp-tier-security
+            # Uncomment to allow: read-write StagedGlobalNetworkPolicy resources in Tier security
+            #- rdwr-sgnp-tier-security
+
+            # Uncomment to allow: read-write GlobalNetworkSet resources
+            #- rdwr-gnets
+            # Uncomment to allow: read-write GlobalNetworkSet resources
+            #- rdwr-gnets
+
+            # Uncomment to allow: read-write Tier resources
+            #- rdwr-tier
+            # Uncomment to allow: read Tier resources
+            #- rd-tier
+            # Uncomment to allow: read-write GlobalNetworkPolicy resources in all Tiers
+            #- rdwr-gnp-all-tier
+            # Uncomment to allow: read-write StagedGlobalNetworkPolicy resources in all Tiers
+            #- rdwr-sgnp-all-tier
+---
+
+# Template for user specific RBAC for UI namespace scoped resources
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-namespace-scoped-user-uat
+aggregationRule:
+  clusterRoleSelectors:
+    - matchExpressions:
+        - key: tigera.io/scope
+          operator: In
+          values:
+          - namespace
+        - key: tigera.io/rbac-id
+          operator: In
+          values:  
+            # Uncomment to allow: read (Calico) NetworkPolicy resources in all Tiers
+            #- rd-np-all-tiers
+              # Uncomment to allow: read StagedNetworkPolicy resources in all Tiers
+            #- rd-snp-all-tier
+            # Uncomment to allow: read-write (Calico) NetworkPolicy resources in all Tiers
+            #- rdwr-np-all-tier
+            # Uncomment to allow: read-write StagedNetworkPolicy resources in all Tiers
+            #- rdwr-snp-all-tier
+
+            # Uncomment to allow: read (Kubernetes) NetworkPolicy resources (these are always in Tier default)
+            #- rd-knp
+            # Uncomment to allow: read StagedKubernetesNetworkPolicy resources (these are always in Tier default)
+            #- rd-sknp
+            # Uncomment to allow: read-write (Kubernetes) NetworkPolicy resources (these are always in Tier default)
+            #- rdwr-knp
+            # Uncomment to allow: read-write StagedKubernetesNetworkPolicy resources (these are always in Tier default)
+            #- rdwr-sknp
+
+            # Uncomment to allow: read (Calico) NetworkPolicy resources in Tier default
+            - rd-np-tier-default
+            # Uncomment to allow: read StagedNetworkPolicy resources in Tier default
+            #- rd-snp-tier-default
+            # Uncomment to allow: read-write (Calico) NetworkPolicy resources in Tier default
+            #- rdwr-np-tier-default  
+            # Uncomment to allow: read-write StagedNetworkPolicy resources in Tier default
+            #- rdwr-snp-tier-default
+
+            # Uncomment to allow: read (Calico) NetworkPolicy resources in Tier security
+            #- rd-np-tier-security
+            # Uncomment to allow: read StagedNetworkPolicy resources in Tier security
+            #- rd-snp-tier-security
+            # Uncomment to allow: read-write (Calico) NetworkPolicy resources in Tier security
+            #- rdwr-np-tier-security
+            # Uncomment to allow: read-write StagedNetworkPolicy resources in Tier security
+            #- rdwr-snp-tier-security
+
+            # Uncomment to allow: read NetworkSet resources
+            # - rd-nets-uat
+            # Uncomment to allow: read NetworkSet resources
+            #- rd-nets
+            # Uncomment to allow: read-write NetworkSet resources
+            #- rdwr-nets
+---
+
+# User jacki RBAC bindings for cluster-scoped resources
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tigera-cluster-scoped-bindings-user-uat
+subjects:
+  - kind: ServiceAccount
+    name: jacki
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: tigera-cluster-scoped-user-uat
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+# User jacki RBAC bindings for cluster-scoped resources
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: tigera-namespace-scoped-bindings-user-uat
+  namespace: dev
+subjects:
+  - kind: ServiceAccount
+    name: jacki
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: tigera-namespace-scoped-user-uat
+  apiGroup: rbac.authorization.k8s.io
+---

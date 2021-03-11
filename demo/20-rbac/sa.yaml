@@ -1,0 +1,35 @@
+# secops - has security team access
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sally
+  namespace: default
+---
+# platform - has infra/platform team access
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: david
+  namespace: default
+---
+# service owner - has dev team admin access
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: samantha
+  namespace: default
+---
+# dev - has dev team access to default tier
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bob
+  namespace: default
+---
+# jacki - has uat team access to default tier
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jacki
+  namespace: default
+---

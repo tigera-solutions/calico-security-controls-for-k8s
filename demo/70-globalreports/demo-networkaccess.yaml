@@ -1,14 +1,14 @@
 apiVersion: projectcalico.org/v3
 kind: GlobalReport
 metadata:
-  name: demo-networkacess
+  name: demo-networkaccess
   labels:
-    deployment: production
+    deployment: pre-prod
 spec:
   reportType: network-access
   endpoints:
     namespaces:
-      names: ["ns1","ns2"]
+      names: ["dev","uat"]
   ## every top of hour: 0 * * * *
   ## every 5 min: */5 * * * *
   ## every 6 hours: 0 */6 * * *

@@ -30,8 +30,8 @@ The examples in this guide use demo applications in `./app` directory. Each demo
 Deploy the demo app stacks.
 
 ```bash
-kubectl apply -f app/ns1/
-kubectl apply -f app/ns2/
+kubectl apply -f app/dev/
+kubectl apply -f app/uat/
 ```
 
 ## Network policies
@@ -40,106 +40,78 @@ Kubernetes [network policies](https://kubernetes.io/docs/concepts/services-netwo
 
 Calico [network policies](https://docs.tigera.io/security/calico-network-policy) extend k8s network policies with additional capabilities like global scope, policy ordering controls, rule actions (i.e. `Allow`, `Deny`, `Log`, `Pass`), DNS policies, policy tiers, policy preview and staging, and other fine-grained policy controls.
 
-A common security practice is to only open access required by applications and services running in k8s cluster. This can be achieved by deploying a `default-deny` policy for each namespace when using k8s network policies.
+A common security practice is to only open access required by applications and services running in the Kubernetes cluster. This can be achieved by deploying a `default-deny` policy into each namespace when using the Kubernetes network policy or Calico global network policy that enforces rules across the whole cluster.
 
-Deploy k8s `default-deny` policy that applies to `ns1` namespace.
+Deploy Kubernetes `default-deny` policy that enforces rules for `dev` namespace only.
 
 >Once you deploy `default-deny` policy, you **must** include both `Ingress` and `Egress` type rules into policies to allow traffic.
 
 ```bash
-# deploy staged default-deny
-kubectl apply -f demo/10-k8s-n-calico-policy/calico.staged.default-deny.yaml
-# deploy namespaced default-deny
+# deploy Kubernetes namespaced default-deny policy
 kubectl apply -f demo/10-k8s-n-calico-policy/k8s.deny-all.yaml
 
 # test pod to pod access within namespaces
-kubectl -n ns1 exec -t centos -- sh -c 'SVC=nginx-svc; curl -m 2 -sI http://$SVC 2>/dev/null | grep -i http'
-kubectl -n ns2 exec -t netshoot -- sh -c 'SVC=nginx-svc; curl -m 2 -sI http://$SVC 2>/dev/null | grep -i http'
+kubectl -n dev exec -t centos -- sh -c 'SVC=nginx-svc; curl -m 2 -sI http://$SVC 2>/dev/null | grep -i http'
+kubectl -n uat exec -t netshoot -- sh -c 'SVC=nginx-svc; curl -m 2 -sI http://$SVC 2>/dev/null | grep -i http'
 # test pod to pod access across namespaces
-kubectl -n ns1 exec -t centos -- sh -c 'SVC=nginx-svc; curl -m 2 -sI http://$SVC.ns2 2>/dev/null | grep -i http'
-kubectl -n ns2 exec -t netshoot -- sh -c 'SVC=nginx-svc; curl -m 2 -sI http://$SVC.ns1 2>/dev/null | grep -i http'
+kubectl -n dev exec -t centos -- sh -c 'SVC=nginx-svc; curl -m 2 -sI http://$SVC.uat 2>/dev/null | grep -i http'
+kubectl -n uat exec -t netshoot -- sh -c 'SVC=nginx-svc; curl -m 2 -sI http://$SVC.dev 2>/dev/null | grep -i http'
 ```
 
-Deploy Calico global policy to allow k8s DNS access
+Deploy the Kubernetes policy to allow `centos` access `nginx` within `dev` namespace.
+
+```bash
+# deploy policy
+kubectl apply -f demo/10-k8s-n-calico-policy/k8s.centos-to-nginx.yaml
+```
+
+Deploy Calico global policy to allow the Kubernetes DNS access.
+
+>Note that before you deploy the policy to allow access to Kubernetes DNS component, the `centos` pod cannot reach Nginx pods via the Kubernetes service.
 
 ```bash
 # deploy policy
 kubectl apply -f demo/10-k8s-n-calico-policy/calico.allow-kube-dns.yaml
 ```
 
-Deploy k8s policy to allow `centos` access `nginx`
+One of the advantages of Calico policies is the ability to set a `Global` scope for the policy which will ensure its application to all of the namespaces in the Kubernetes cluster.
+Deploy Calico staged global `default-deny` policy that applies to both `dev` and `uat` namespaces.
+
+>Calico staged network policy is deployed in a **permissive** mode and does not affect the traffic. It can be used to observe potential impact of the policy on the traffic before one decides to enforce the policy rules.
 
 ```bash
-# deploy policy
-kubectl apply -f demo/10-k8s-n-calico-policy/k8s.allow-nginx-ingress.yaml
+# deploy Calico staged global default-deny policy
+kubectl apply -f demo/10-k8s-n-calico-policy/calico.staged.default-deny.yaml
 ```
 
-One of the advantages of Calico policies is the ability to set a `Global` scope for the policy which will ensure its application to all of the namespaces in k8s cluster.
-
-Deploy Calico global `default-deny` policy.
+Deploy Calico global `default-deny` policy to enforce policy rules.
 
 ```bash
 # deploy policy
 kubectl apply -f demo/10-k8s-n-calico-policy/calico.deny-all.yaml
 
-# test nginx access in ns2
-kubectl -n ns2 exec -t netshoot -- sh -c 'SVC=nginx-svc; nslookup $SVC; curl -m 5 -sI http://$SVC 2>/dev/null | grep -i http'
+# test nginx access in uat
+kubectl -n uat exec -t netshoot -- sh -c 'SVC=nginx-svc; nslookup $SVC; curl -m 5 -sI http://$SVC 2>/dev/null | grep -i http'
 ```
 
 Deploy Calico policy to allow `netshoot` access to `nginx` service.
 
 ```bash
 # deploy policy
-kubectl apply -f demo/10-k8s-n-calico-policy/calico.allow-nginx-ingress.yaml
+kubectl apply -f demo/10-k8s-n-calico-policy/calico.netshoot-to-nginx.yaml
 ```
 
-Deploy logging policy to capture `nginx` pod access
+When using Calico one can leverage `Log` action on policy rules to log traffic flows into the system log. This action is not necessary when using Calico Enterprise or Calico Cloud as the commercial offering captures the flow logs by default.
+
+Deploy logging policy to capture `nginx` pod access.
 
 ```bash
 # deploy logging policy
 kubectl apply -f demo/10-k8s-n-calico-policy/calico.log-access.yaml
 
-# SSH into the host that runs nginx pod from ns1 namespace
+# SSH into the host that runs nginx pod from dev namespace
 # view access trace for nginx pod
 tail -f /var/log/kern.log | grep -i calico
-```
-
-## Kubernetes RBAC
-
-Kubernetes RBAC model uses `subjects` to execute `operations` over `resources`. While `subject` can be a `User`, `Group`, or `Service Account`, the former two are managed outside of Kubernetes and referenced by a string ID. In this guide `Service Account` subjects will be used for RBAC examples.
-
-![Kubernetes RBAC model](./img/k8s_rbac_constructs.png)
-
-Create two `Service Accounts` and configure `Role` and `RoleBinding` for each account
-
-```bash
-# configure 'paul' service account - has full admin access
-kubectl create sa paul
-# configure role and rolebinding
-kubectl create clusterrolebinding paul-admin-access --clusterrole tigera-network-admin --serviceaccount default:paul
-
-# configure 'sally' service account - has security team access
-kubectl create sa sally
-# configure 'david' service account - has infra/platform team access
-kubectl create sa david
-# configure 'samantha' service account - has dev team admin access
-kubectl create sa samantha
-# configure 'bob' service account - has dev team access
-kubectl create sa bob
-# configure role and rolebinding
-# kubectl create -f demo/20-rbac/security-roles-rolebindings.yaml
-kubectl create -f demo/20-rbac/roles-rolebindings.yaml
-
-# deploy additional role and rolebinding to allow sally access k8s net policies
-kubectl create -f demo/20-rbac/k8s.net-policy-access-roles-rolebindings.yaml
-```
-
-Retrieve token to login into Calico Enterprise Manager.
-
-```bash
-SA='sally'
-# get service account token
-kubectl get secret $(kubectl get serviceaccount $SA -o jsonpath='{range .secrets[*]}{.name}{"\n"}{end}' | grep token) -o go-template='{{.data.token | base64decode}}'
 ```
 
 ## Policy tiers
@@ -149,8 +121,9 @@ Calico Enterprise provides policy tiers that allow to categorize the policies. F
 Deploy `security` policy tier and move `log-access` policy into it.
 
 ```bash
-# deploy tier
+# deploy tiers
 kubectl apply -f demo/30-tier/tier-security.yaml
+kubectl apply -f demo/30-tier/tier-platform.yaml
 
 # deploy log-access policy into security tier
 kubectl apply -f demo/30-tier/calico.log-access.yaml
@@ -184,11 +157,54 @@ kubectl exec -t centos -- sh -c "ping -c2 $PUB_IP"
 kubectl exec -t centos -- sh -c 'curl -m 5 -sI http://www.google.com 2>/dev/null | grep -i http'
 ```
 
-### Global Threatfeeds
+## Kubernetes RBAC
+
+Kubernetes RBAC model uses `subjects` to execute `operations` over `resources`. While `subject` can be a `User`, `Group`, or `Service Account`, the former two are managed outside of Kubernetes and referenced by a string ID. In this guide `Service Account` subjects will be used for RBAC examples.
+
+![Kubernetes RBAC model](./img/k8s_rbac_constructs.png)
+
+Create two `Service Accounts` and configure `Role` and `RoleBinding` for each account
+
+```bash
+# configure 'paul' service account - has full admin access
+kubectl create sa paul
+# configure role and rolebinding
+kubectl create clusterrolebinding paul-admin-access --clusterrole tigera-network-admin --serviceaccount default:paul
+
+# configure 'sally' service account - has security team access
+kubectl create sa sally
+# configure 'david' service account - has infra/platform team access
+kubectl create sa david
+# configure 'samantha' service account - has dev team admin access
+kubectl create sa samantha
+# configure 'bob' service account - has limited dev team access
+kubectl create sa bob
+# configure 'jacki' service account - has uat team access
+kubectl create sa jacki
+
+# configure cluster wide roles and rolebindings
+kubectl create -f demo/20-rbac/tigera-roles-rolebindings.yaml
+
+# configure roles and rolebindings specific to teams
+kubectl create -f demo/20-rbac/ns-dev-roles.yaml
+kubectl create -f demo/20-rbac/ns-uat-roles.yaml
+kubectl create -f demo/20-rbac/dev-rolebindings.yaml
+kubectl create -f demo/20-rbac/uat-rolebindings.yaml
+```
+
+Retrieve token to login into Calico Enterprise Manager and explore what network policies and other resources a user has access to.
+
+```bash
+SA='bob'
+# get service account token
+kubectl get secret $(kubectl get serviceaccount $SA -o jsonpath='{range .secrets[*]}{.name}{"\n"}{end}' | grep token) -o go-template='{{.data.token | base64decode}}'
+```
+
+### Global ThreatFeeds
 
 Calico Enterprise provides `GlobalThreatFeed` resource that represents a feed of threat intelligence used for security purposes. The threat feeds can be either a collection of IP prefixes or domain names.
 
-Deploy a `GlobalThreatFeed` that represents publicly managed list of feodo IP prefixes.
+Deploy a `GlobalThreatFeed` that represents publicly managed list of Feodo IP prefixes.
 
 ```bash
 # deploy global threat feed
@@ -205,13 +221,13 @@ Deploy DNS policy.
 
 ```bash
 # deploy policy
-kubectl apply -f demo/50-dns-policy/calico.allow-google-dns-egress.yaml
+kubectl apply -f demo/50-dns-policy/calico.allow-external-dns-egress.yaml
 
 # test centos pod access to google DNS
 # egress to Google DNS should be allowed
-kubectl -n ns1 exec -t centos -- sh -c 'curl -m 2 -sI http://www.google.com 2>/dev/null | grep -i http'
+kubectl -n dev exec -t centos -- sh -c 'curl -m 2 -sI http://www.google.com 2>/dev/null | grep -i http'
 # egress to Apple DNS should be denied
-kubectl -n ns1 exec -t centos -- sh -c 'curl -m 2 -sI http://www.apple.com 2>/dev/null | grep -i http'
+kubectl -n dev exec -t centos -- sh -c 'curl -m 2 -sI http://www.apple.com 2>/dev/null | grep -i http'
 ```
 
 ## Global alerts
@@ -223,11 +239,11 @@ Deploy a `GlobalAlert` that watches any changes to `NetworkSets`.
 ```bash
 # deploy global alerts
 # dataset: audit
-kubectl apply -f demo/60-globalalerts/galert.policy.globalnetworkset.yaml
+kubectl apply -f demo/60-globalalerts/globalnetworkset.change.yaml
 # dataset: dns
-kubectl apply -f demo/60-globalalerts/galert.dns.match.yaml
+kubectl apply -f demo/60-globalalerts/dns.match.yaml
 # dataset: flows
-kubectl apply -f demo/60-globalalerts/unsanctioned-access-alert.yaml
+kubectl apply -f demo/60-globalalerts/unsanctioned.lateral.access.yaml
 
 # change existing global network set, then check alerts UI in Calico Enterprise Manager
 sed -e '/1.0.0.0\/8/{d;}' demo/40-netsets/calico.public-nets.yaml | kubectl apply -f -
@@ -235,12 +251,12 @@ sed -e '/1.0.0.0\/8/{d;}' demo/40-netsets/calico.public-nets.yaml | kubectl appl
 # change DNS log flush interval to speed up alert trigger
 kubectl patch felixconfiguration.p default -p '{"spec":{"dnsLogsFlushInterval":"10s"}}'
 # generate a few requests to www.apple.com domain
-for i in {1..3}; do kubectl -n ns1 exec -t centos -- sh -c 'curl -m 5 -sI http://www.apple.com 2>/dev/null | grep -i http'; done
+for i in {1..3}; do kubectl -n dev exec -t centos -- sh -c 'curl -m 5 -sI http://www.apple.com 2>/dev/null | grep -i http'; done
 
-# allow centos pod to communicate with nginx pods in ns2
-kubectl apply -f demo/60-globalalerts/calico.centos-to-ns2-nginx.yaml
-# access nginx in ns2 from centos pod
-for i in {1..3}; do kubectl -n ns1 exec -t centos -- sh -c 'curl -m3 -sI http://nginx-svc.ns2 2>/dev/null | grep -i http'; done
+# allow centos pod to communicate with nginx pods in uat
+kubectl apply -f demo/60-globalalerts/calico.dev-to-uat-nginx.yaml
+# access nginx in uat from centos pod
+for i in {1..3}; do kubectl -n dev exec -t centos -- sh -c 'curl -m3 -sI http://nginx-svc.uat 2>/dev/null | grep -i http'; done
 ```
 
 Navigate to Alerts view to see the generated alerts.
@@ -256,10 +272,10 @@ Deploy `GlobalReport` resources.
 
 ```bash
 kubectl apply -f demo/70-globalreports/cluster-inventory.yaml
-kubectl apply -f demo/70-globalreports/cluster-networkacess.yaml
+kubectl apply -f demo/70-globalreports/cluster-networkaccess.yaml
 kubectl apply -f demo/70-globalreports/cluster-policy-audit.yaml
 kubectl apply -f demo/70-globalreports/demo-inventory.yaml
-kubectl apply -f demo/70-globalreports/demo-networkacess.yaml
+kubectl apply -f demo/70-globalreports/demo-networkaccess.yaml
 kubectl apply -f demo/70-globalreports/demo-policy-audit.yaml
 kubectl apply -f demo/70-globalreports/daily-cis-results.yaml
 ```
@@ -335,7 +351,7 @@ PORT_LIST=$(nmap -Pn $HOST_LIST)
 echo $PORT_LIST
 ```
 
-Once you simulate the attacks, run the machine learning jobs again. When they finish review the anomaly scores using `Anomaly Explorer` view in Kibana. If detected anomalies get a score of 75 or higher, an alert will be generated and can be viewed in the Alerts view of Tigera Enterprise Manager.
+Once you simulate the attacks, run the machine learning jobs again. When they finish review the anomaly scores using `Anomaly Explorer` view in Kibana. If detected anomalies get a score of 75 or higher, an alert will be generated and can be viewed in the Alerts view of Calico Enterprise Manager.
 
 ## Cleanup
 
@@ -343,16 +359,15 @@ Once you simulate the attacks, run the machine learning jobs again. When they fi
 # delete policies
 # kubectl delete -f demo/10-k8s-n-calico-policy/calico.allow-kube-dns.yaml
 kubectl delete -f demo/10-k8s-n-calico-policy/k8s.deny-all.yaml
-kubectl delete -f demo/10-k8s-n-calico-policy/k8s.allow-nginx-ingress.yaml
+kubectl delete -f demo/10-k8s-n-calico-policy/k8s.centos-to-nginx.yaml
 kubectl delete -f demo/10-k8s-n-calico-policy/calico.deny-all.yaml
-kubectl delete -f demo/10-k8s-n-calico-policy/calico.allow-nginx-ingress.yaml
+kubectl delete -f demo/10-k8s-n-calico-policy/calico.netshoot-to-nginx.yaml
 kubectl delete -f demo/10-k8s-n-calico-policy/calico.log-access.yaml
 kubectl delete -f demo/30-tier/calico.log-access.yaml
 kubectl delete -f demo/30-tier/calico.allow-kube-dns.yaml
-kubectl delete -f demo/50-dns-policy/calico.allow-google-dns-egress.yaml
-kubectl delete -f demo/60-globalalerts/calico.centos-to-ns2-nginx.yaml
-# delete tier
-kubectl delete -f demo/30-tier/tier-security.yaml
+kubectl delete -f demo/40-netsets/calico.deny-public-nets-egress.yaml
+kubectl delete -f demo/50-dns-policy/calico.allow-external-dns-egress.yaml
+kubectl delete -f demo/60-globalalerts/calico.dev-to-uat-nginx.yaml
 
 # delete RBAC
 kubectl delete sa paul
@@ -361,8 +376,15 @@ kubectl delete sa sally
 kubectl delete sa david
 kubectl delete sa samantha
 kubectl delete sa bob
-kubectl delete -f demo/20-rbac/roles-rolebindings.yaml
-kubectl delete -f demo/20-rbac/k8s.net-policy-access-roles-rolebindings.yaml
+kubectl delete -f demo/20-rbac/ns-uat-roles.yaml
+kubectl delete -f demo/20-rbac/ns-dev-roles.yaml
+kubectl delete -f demo/20-rbac/uat-rolebindings.yaml
+kubectl delete -f demo/20-rbac/dev-rolebindings.yaml
+kubectl delete -f demo/20-rbac/tigera-roles-rolebindings.yaml
+
+# delete tier
+kubectl delete -f demo/30-tier/tier-security.yaml
+kubectl delete -f demo/30-tier/tier-platform.yaml
 
 # delete Netsets and Threatfeed
 kubectl delete -f demo/40-netsets/allowed-domains-netset.yaml
@@ -371,9 +393,9 @@ kubectl delete -f demo/40-netsets/calico.deny-public-nets-egress.yaml
 kubectl delete -f demo/40-netsets/global-threatfeed-ipfeodo.yaml
 
 # delete Global Alerts
-kubectl delete -f demo/60-globalalerts/galert.policy.globalnetworkset.yaml
-kubectl delete -f demo/60-globalalerts/galert.dns.match.yaml
-kubectl delete -f demo/60-globalalerts/unsanctioned-access-alert.yaml
+kubectl delete -f demo/60-globalalerts/dns.match.yaml
+kubectl delete -f demo/60-globalalerts/globalnetworkset.change.yaml
+kubectl delete -f demo/60-globalalerts/unsanctioned.lateral.access.yaml
 
 # delete global reports
 kubectl delete -f demo/70-globalreports/cluster-inventory.yaml
@@ -389,6 +411,6 @@ kubectl delete -f demo/80-anomaly-detection/pod-netshoot.yaml
 kubectl delete -f demo/80-anomaly-detection/nginx-stack.yaml
 
 # delete apps
-kubectl delete -f app/ns1/
-kubectl delete -f app/ns2/
+kubectl delete -f app/dev/
+kubectl delete -f app/uat/
 ```

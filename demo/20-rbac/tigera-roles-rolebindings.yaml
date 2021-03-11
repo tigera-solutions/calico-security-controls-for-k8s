@@ -1,0 +1,1298 @@
+###############
+# ElasticSearch
+###############
+# This allows read access to all ElasticSearch resources for all clusters.
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tigera-read-all-elasticsearch-for-all-clusters
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: elasticsearch
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/managedcluster: ""
+    tigera.io/rbac-id: rd-all-es-all-cl
+  annotations:
+    tigera.io/description: "read access for all elasticsearch indices for all-clusters"
+rules:
+  - apiGroups:
+      - lma.tigera.io
+    resources:
+      - "*"
+    verbs:
+      - get
+---
+
+# This allows read access to ElasticSearch indexes with flow logs for all clusters.
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tigera-elasticsearch-flows-all-clusters
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: elasticsearch-flows
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/managedcluster: ""
+    tigera.io/rbac-id: rd-es-flows-all-cl
+  annotations:
+    tigera.io/description: "read access for elasticsearch indices with data for flow logs for all clusters"
+rules:
+  - apiGroups:
+      - lma.tigera.io
+    resources:
+      - "*"
+    resourceNames:
+      - flows
+    verbs:
+      - get
+---
+
+# This allows read access to ElasticSearch indexes with audit logs for all clusters.
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tigera-read-elasticsearch-audits-for-all-clusters
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: elasticsearch-audit
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/managedcluster: ""
+    tigera.io/rbac-id: rd-es-audits-all-cl
+  annotations:
+    tigera.io/description: "read access for elasticsearch indices with data for audit logs for all clusters"
+rules:
+  - apiGroups:
+      - lma.tigera.io
+    resources:
+      - "*"
+    resourceNames:
+      - "audit*"
+    verbs:
+      - get
+---
+
+# This allows read access to ElasticSearch indexes with event logs for all clusters.
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tigera-read-elasticsearch-events-for-all-clusters
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: elasticsearch-events
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/managedcluster: ""
+    tigera.io/rbac-id: rd-es-events-all-cl
+  annotations:
+    tigera.io/description: "read access for elasticsearch indices with data for intrusion detection events for all clusters"
+rules:
+  - apiGroups:
+      - lma.tigera.io
+    resources:
+      - "*"
+    resourceNames:
+      - events
+    verbs:
+      - get
+---
+
+# This allows read access to ElasticSearch indexes with dns logs for all clusters.
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tigera-read-elasticsearch-dns-for-all-clusters
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: elasticsearch-dns
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/managedcluster: ""
+    tigera.io/rbac-id: rd-es-dns-all-cl
+  annotations:
+    tigera.io/description: "read access for elasticsearch indices with data for DNS logs for all clusters"
+rules:
+  - apiGroups:
+      - lma.tigera.io
+    resources:
+      - "*"
+    resourceNames:
+      - dns
+    verbs:
+      - get
+---
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tigera-is-elasticsearch-superuser-for-all-clusters
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: elasticsearch-superuser
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/managedcluster: ""
+    tigera.io/rbac-id: rd-es-superuser-all-cl
+  annotations:
+    tigera.io/description: "superuser read access to elasticsearch indices for all clusters"
+rules:
+  - apiGroups:
+      - lma.tigera.io
+    resources:
+      - "*"
+    resourceNames:
+      - elasticsearch_superuser
+    verbs:
+      - get
+---
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tigera-read-elasticsearch-l7-for-all-clusters
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: elasticsearch-l7
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/managedcluster: ""
+    tigera.io/rbac-id: rd-es-l7-all-cl
+  annotations:
+    tigera.io/description: "read access for elasticsearch indices with data for L7 logs for all clusters"
+rules:
+  - apiGroups:
+      - lma.tigera.io
+    resources:
+      - "*"
+    resourceNames:
+      - l7
+    verbs:
+      - get
+---
+
+###############
+# Kibana access
+###############
+# This allows access to Kibana to read, discover, visualize ES indices for all clusters.
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tigera-allow-kibana-access-for-all-cluster
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: elasticsearch-kibana-access
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/managedcluster: ""
+    tigera.io/rbac-id: kibana-access-all-cl
+  annotations:
+    tigera.io/description: "access to Kibana and read, discover, visualize elasticsearch indices for all clusters"
+rules:
+  - apiGroups:
+      - lma.tigera.io
+    resources:
+      - "*"
+    resourceNames:
+      - kibana_login
+    verbs:
+      - get
+---
+
+###############
+# GlobalAlerts
+###############
+# This allows read access to Calico GlobalAlert resources.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-globalalerts
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: globalalerts
+    tigera.io/access: read
+    tigera.io/rbac-id: rd-galerts
+  annotations:
+    tigera.io/description: "read GlobalAlert resources"
+rules:
+  # Read access for Calico GlobalAlert resources.
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - globalalerts
+      - globalalerts/status
+      - globalalerttemplates
+    verbs:
+      - get
+      # - watch
+      - list
+---
+
+# This allows crud access to Calico GlobalAlert resources.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: read-write-globalalerts
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: globalalerts
+    tigera.io/access: read-write
+    tigera.io/rbac-id: rdwr-galerts
+  annotations:
+    tigera.io/description: "read-write GlobalAlert resources in Tier {{ TierName }}"
+rules:
+  # CRUD access for Calico GlobalAlert resources.
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - globalalerts
+      - globalalerts
+      - globalalerts/status
+      - globalalerttemplates
+    verbs:
+      - "*"
+---
+
+###############
+# GlobalReports
+###############
+# This allows read access to global report summary.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-summary-of-reports-cluster-demo
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: globalreports.summary
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/report: cluster-demo
+    tigera.io/rbac-id: summary-rep-cluster-demo
+  annotations:
+    tigera.io/description: "view summary details of compliance reports cluster and demo"
+rules:
+  # To view summary, need get access to the underlying GlobalReport resource.
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - globalreports
+    resourceNames:
+      - daily-cis-results
+      - cluster-inventory
+      - cluster-networkaccess
+      - cluster-policy-audit
+      - demo-inventory
+      - demo-networkaccess
+      - demo-policy-audit
+    verbs:
+      - get
+  # And list access for all globalreports.
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - globalreports
+    verbs:
+      - list
+---
+
+# This allows read access to global report details.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-details-of-reports-cluster-demo
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: globalreports.content
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/report: cluster-demo
+    tigera.io/rbac-id: details-rep-cluster-demo
+  annotations:
+    tigera.io/description: "view all details of compliance report cluster-demo"
+rules:
+  # To view full report, need get access to the underlying GlobalReport resource *and* the corresponding
+  # GlobalReportType.
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - globalreports
+    resourceNames:
+      - daily-cis-results
+      - cluster-inventory
+      - cluster-networkaccess
+      - cluster-policy-audit
+      - demo-inventory
+      - demo-networkaccess
+      - demo-policy-audit
+    verbs:
+      - get
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - globalreporttypes
+    resourceNames:
+      - cis-benchmark
+      - inventory
+      - networkaccess
+      - policy-audit
+    verbs:
+      - get
+  # And list access for all globalreports.
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - globalreports
+    verbs:
+      - list
+---
+
+# This allows read access to global report summary of demo reports only.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-summary-of-reports-demo
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: globalreports.summary
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/report: demo
+    tigera.io/rbac-id: summary-rep-demo
+  annotations:
+    tigera.io/description: "view summary details of compliance demo reports"
+rules:
+  # To view summary, need get access to the underlying GlobalReport resource.
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - globalreports
+    resourceNames:
+      - demo-inventory
+      - demo-networkaccess
+      - demo-policy-audit
+    verbs:
+      - get
+  # And list access for all globalreports.
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - globalreports
+    verbs:
+      - list
+---
+
+# This allows read access to demo global report details.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-details-of-reports-demo
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: globalreports.content
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/report: demo
+    tigera.io/rbac-id: details-rep-demo
+  annotations:
+    tigera.io/description: "view all details of compliance report demo"
+rules:
+  # To view full report, need get access to the underlying GlobalReport resource *and* the corresponding
+  # GlobalReportType.
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - globalreports
+    resourceNames:
+      - demo-inventory
+      - demo-networkaccess
+      - demo-policy-audit
+    verbs:
+      - get
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - globalreporttypes
+    resourceNames:
+      - inventory
+      - networkaccess
+      - policy-audit
+    verbs:
+      - get
+  # And list access for all globalreports.
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - globalreports
+    verbs:
+      - list
+---
+
+# This allows view report summary access to all reports.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-summary-of-all-reports
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: globalreports.summary
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/report: ""
+    tigera.io/rbac-id: summary-all-rep
+  annotations:
+    tigera.io/description: "view summary details of all compliance reports, and read access to all GlobalReport resources"
+rules:
+  # To view summary, need get access to the underlying GlobalReport resource.
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - globalreports
+    verbs:
+      - get
+      - watch
+      - list
+---
+
+# This allows view full report access to the daily-cluster-cis-benchmark-report report.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-details-of-all-reports
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: globalreports.content
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/report: ""
+    tigera.io/rbac-id: details-all-rep
+  annotations:
+    tigera.io/description: "view all details of all compliance reports"
+rules:
+  # To view full report, need get access to the underlying GlobalReport resource *and* the corresponding
+  # GlobalReportType.
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - globalreports
+    verbs:
+      - get
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - globalreporttypes
+    verbs:
+      - get
+---
+
+###################################
+# NetworkSets and GlobalNetworkSets
+###################################
+# This allows read access to Calico NetworkSet resources.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-networksets
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: networksets
+    tigera.io/scope: namespace
+    tigera.io/access: read
+    tigera.io/rbac-id: rd-nets
+  annotations:
+    tigera.io/description: "read NetworkSet resources"
+rules:
+  # Read access for Calico NetworkSet resources.
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - networksets
+    verbs:
+      - get
+      - watch
+      - list
+---
+
+# This allows read access to Calico GlobalNetworkSet resources.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-globalnetworksets
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: globalnetworksets
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/rbac-id: rdwr-gnets
+  annotations:
+    tigera.io/description: "read-write GlobalNetworkSet resources"
+rules:
+  # Read access for Calico GlobalNetworkSet resources.
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - globalnetworksets
+    verbs:
+      - get
+      - watch
+      - list
+---
+
+####################
+# traffic statistics and Tigera UI
+####################
+# This allows read access to traffic statistics in the Tigera UI.
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tigera-read-traffic-statistics
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: prometheus
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/rbac-id: rd-traffic-statistics
+  annotations:
+    tigera.io/description: "view traffic statistics in the Tigera UI"
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - services/proxy
+    resourceNames:
+      - calico-node-prometheus:9090
+    verbs:
+      - get
+      - create
+---
+
+# This allows read access to Tigera UI
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tigera-allow-ui-access
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: ui
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/rbac-id: ui-access
+  annotations:
+    tigera.io/description: "access to the Tigera UI"
+rules:
+  # UI users need access to authorizationreviews, authenticationreviews, clusterinformations.
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+    verbs:
+      - watch
+      - get
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - authorizationreviews
+      - authenticationreviews
+    verbs:
+      - create
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - clusterinformations
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - ""
+    resources:
+      - services/proxy
+    resourceNames:
+      - https:tigera-api:8080
+    verbs:
+      - get
+      - create
+---
+
+###############
+# tiers
+###############
+# This allows read to listed tiers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-tiers
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: tiers
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/rbac-id: rd-tier
+  annotations:
+    tigera.io/description: "read Tier resources"
+rules:
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tiers
+    # only allow access to listed tiers
+    resourceNames:
+      # - security
+      # - platform
+      - default
+    verbs:
+      - list
+      - get
+      - watch
+---
+
+# This allows access to Calico NetworkPolicy resources in the default tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-manage-policies-in-tier-default
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: tiers
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/tier: default
+    tigera.io/rbac-id: manage-tier-default
+  annotations:
+    tigera.io/description: "view tier default, and allow management of policies in this tier (additional RBAC permissions required to specify which resources can be managed within the tier)"
+rules:
+  # Requires watch access for tiers to manage policies
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tiers
+    verbs:
+      - watch
+  # Requires get access for tier "default" to view the tier and manage policies in it.
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tiers
+    resourceNames:
+      - default
+    verbs:
+      - get
+---
+
+# This allows crud access to Calico NetworkPolicy resources in the security tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-manage-policies-in-tier-security
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: tiers
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/tier: security
+    tigera.io/rbac-id: manage-tier-security
+  annotations:
+    tigera.io/description: "view tier security, and allow management of policies in this tier (additional RBAC permissions required to specify which resources can be managed within the tier)"
+rules:
+  # Requires watch access for tiers to manage policies
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tiers
+    verbs:
+      - watch
+  # Requires get access for tier "security" to view the tier and manage policies in it.
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tiers
+    resourceNames:
+      - security
+    verbs:
+      - get
+---
+
+# This allows crud access to Calico NetworkPolicy resources in the platform tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-manage-policies-in-tier-platform
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: tiers
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/tier: platform
+    tigera.io/rbac-id: manage-tier-platform
+  annotations:
+    tigera.io/description: "view tier platform, and allow management of policies in this tier (additional RBAC permissions required to specify which resources can be managed within the tier)"
+rules:
+  # Requires watch access for tiers to manage policies
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tiers
+    verbs:
+      - watch
+  # Requires get access for tier "platform" to view the tier and manage policies in it.
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tiers
+    resourceNames:
+      - platform
+    verbs:
+      - get
+
+---
+
+#################
+# policies access
+#################
+# This allows crud access to Calico NetworkPolicy resources in the default tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-write-networkpolicies-in-tier-default
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: networkpolicies
+    tigera.io/scope: namespace
+    tigera.io/access: read-write
+    tigera.io/tier: default
+    tigera.io/rbac-id: rdwr-np-tier-default
+  annotations:
+    tigera.io/description: "read-write (Calico) NetworkPolicy resources in Tier default"
+rules:
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.networkpolicies
+    resourceNames:
+      - default.*
+    verbs:
+      - "*"
+---
+
+# This allows read access to Calico NetworkPolicy resources in the default tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-networkpolicies-in-tier-default
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: networkpolicies
+    tigera.io/scope: namespace
+    tigera.io/access: read
+    tigera.io/tier: default
+    tigera.io/rbac-id: rd-np-tier-default
+  annotations:
+    tigera.io/description: "read (Calico) NetworkPolicy resources in Tier default"
+rules:
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.networkpolicies
+    resourceNames:
+      - default.*
+    verbs:
+      - get
+      - watch
+      - list
+---
+
+# This allows crud access to Calico GlobalNetworkPolicy resources in the default tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-write-globalnetworkpolicies-in-tier-default
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: globalnetworkpolicies
+    tigera.io/scope: global
+    tigera.io/access: read-write
+    tigera.io/tier: default
+    tigera.io/rbac-id: rdwr-gnp-tier-default
+  annotations:
+    tigera.io/description: "read-write GlobalNetworkPolicy resources in Tier default"
+rules:
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.globalnetworkpolicies
+    resourceNames:
+      - default.*
+    verbs:
+      - "*"
+---
+
+# This allows read access to Calico GlobalNetworkPolicy resources in the default tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-globalnetworkpolicies-in-tier-default
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: globalnetworkpolicies
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/tier: default
+    tigera.io/rbac-id: rd-gnp-tier-default
+  annotations:
+    tigera.io/description: "read GlobalNetworkPolicy resources in Tier default"
+rules:
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.globalnetworkpolicies
+    resourceNames:
+      - default.*
+    verbs:
+      - get
+      - watch
+      - list
+---
+
+# This allows crud access to Calico StagedNetworkPolicy resources in the default tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-write-stagednetworkpolicies-in-tier-default
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: stagednetworkpolicies
+    tigera.io/scope: namespace
+    tigera.io/access: read-write
+    tigera.io/tier: default
+    tigera.io/rbac-id: rdwr-snp-tier-default
+  annotations:
+    tigera.io/description: "read-write StagedNetworkPolicy resources in Tier default"
+rules:
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.stagednetworkpolicies
+    resourceNames:
+      - default.*
+    verbs:
+      - "*"
+---
+
+# This allows read access to Calico StagedNetworkPolicy resources in the default tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-stagednetworkpolicies-tier-default
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: stagednetworkpolicies
+    tigera.io/scope: namespace
+    tigera.io/access: read
+    tigera.io/tier: default
+    tigera.io/rbac-id: rd-snp-tier-default
+  annotations:
+    tigera.io/description: "read StagedNetworkPolicy resources in Tier default"
+rules:
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.stagednetworkpolicies
+    resourceNames:
+      - default.*
+    verbs:
+      - get
+      - watch
+      - list
+---
+
+# This allows crud access to Calico StagedGlobalNetworkPolicy resources in the default tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-write-stagedglobalnetworkpolicies-in-tier-default
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: stagedglobalnetworkpolicies
+    tigera.io/scope: global
+    tigera.io/access: read-write
+    tigera.io/tier: default
+    tigera.io/rbac-id: rdwr-sgnp-tier-default
+  annotations:
+    tigera.io/description: "read-write StagedGlobalNetworkPolicy resources in Tier default"
+rules:
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.stagedglobalnetworkpolicies
+    resourceNames:
+      - default.*
+    verbs:
+      - "*"
+---
+
+# This allows read access to Calico StagedGlobalNetworkPolicy resources in the default tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-stagedglobalnetworkpolicies-in-tier-default
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: stagedglobalnetworkpolicies
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/tier: default
+    tigera.io/rbac-id: rd-sgnp-tier-default
+  annotations:
+    tigera.io/description: "read StagedGlobalNetworkPolicy resources in Tier default"
+rules:
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.stagedglobalnetworkpolicies
+    resourceNames:
+      - default.*
+    verbs:
+      - get
+      - watch
+      - list
+---
+
+# This allows crud access to Kubernetes NetworkPolicy resources (in the default tier).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-write-kubernetes-networkpolicies
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: kubernetesnetworkpolicies
+    tigera.io/scope: namespace
+    tigera.io/access: read-write
+    tigera.io/tier: default
+    tigera.io/rbac-id: rdwr-knp
+  annotations:
+    tigera.io/description: "read-write (Kubernetes) NetworkPolicy resources (these are always in Tier default)"
+rules:
+  # CRUD access for Kubernetes NetworkPolicy resources in the default tier.
+  - apiGroups:
+      - networking.k8s.io
+      - extensions
+    resources:
+      - networkpolicies
+    verbs:
+      - "*"
+---
+
+# This allows read access to Kubernetes NetworkPolicy resources in the default tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-kubernetesnetworkpolicies
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: kubernetesnetworkpolicies
+    tigera.io/scope: namespace
+    tigera.io/access: read
+    tigera.io/tier: default
+    tigera.io/rbac-id: rd-knp
+  annotations:
+    tigera.io/description: "read (Kubernetes) NetworkPolicy resources (these are always in Tier default)"
+rules:
+  # Read access for Kubernetes NetworkPolicy resources in the default tier.
+  - apiGroups:
+      - networking.k8s.io
+      - extensions
+    resources:
+      - networkpolicies
+    verbs:
+      - get
+      - watch
+      - list
+---
+
+# This allows crud access to StagedKubernetesNetworkPolicy resources (in the default tier).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-write-stagedkubernetesnetworkpolicies
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: stagedkubernetesnetworkpolicies
+    tigera.io/scope: namespace
+    tigera.io/access: read-write
+    tigera.io/tier: default
+    tigera.io/rbac-id: rdwr-sknp
+  annotations:
+    tigera.io/description: "read-write StagedKubernetesNetworkPolicy resources (these are always in Tier default)"
+rules:
+  # CRUD access for StagedKubernetesNetworkPolicy resources in the default tier.
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - stagedkubernetesnetworkpolicies
+    verbs:
+      - "*"
+---
+
+# This allows read access to StagedKubernetesNetworkPolicy resources in the default tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-stagedkubernetesnetworkpolicies
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: stagedkubernetesnetworkpolicies
+    tigera.io/scope: namespace
+    tigera.io/access: read
+    tigera.io/tier: default
+    tigera.io/rbac-id: rd-sknp
+  annotations:
+    tigera.io/description: "read StagedKubernetesNetworkPolicy resources (these are always in Tier default)"
+rules:
+  # Read access for StagedKubernetesNetworkPolicy resources in the default tier.
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - stagedkubernetesnetworkpolicies
+    verbs:
+      - get
+      - watch
+      - list
+---
+
+## security tier
+
+# This allows crud access to Calico NetworkPolicy resources in the security tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-write-networkpolicies-in-tier-security
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: networkpolicies
+    tigera.io/scope: namespace
+    tigera.io/access: read-write
+    tigera.io/tier: security
+    tigera.io/rbac-id: rdwr-np-tier-security
+  annotations:
+    tigera.io/description: "read-write (Calico) NetworkPolicy resources in Tier security"
+rules:
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.networkpolicies
+    resourceNames:
+      - security.*
+    verbs:
+      - "*"
+---
+
+# This allows read access to Calico NetworkPolicy resources in the security tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-networkpolicies-in-tier-security
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: networkpolicies
+    tigera.io/scope: namespace
+    tigera.io/access: read
+    tigera.io/tier: security
+    tigera.io/rbac-id: rd-np-tier-security
+  annotations:
+    tigera.io/description: "read (Calico) NetworkPolicy resources in Tier security"
+rules:
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.networkpolicies
+    resourceNames:
+      - security.*
+    verbs:
+      - get
+      - watch
+      - list
+---
+
+# This allows crud access to Calico GlobalNetworkPolicy resources in the security tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-write-globalnetworkpolicies-in-tier-security
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: globalnetworkpolicies
+    tigera.io/scope: global
+    tigera.io/access: read-write
+    tigera.io/tier: security
+    tigera.io/rbac-id: rdwr-gnp-tier-security
+  annotations:
+    tigera.io/description: "read-write GlobalNetworkPolicy resources in Tier security"
+rules:
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.globalnetworkpolicies
+    resourceNames:
+      - security.*
+    verbs:
+      - "*"
+---
+
+# This allows read access to Calico GlobalNetworkPolicy resources in the security tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-globalnetworkpolicies-in-tier-security
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: globalnetworkpolicies
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/tier: security
+    tigera.io/rbac-id: rd-gnp-tier-security
+  annotations:
+    tigera.io/description: "read GlobalNetworkPolicy resources in Tier security"
+rules:
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.globalnetworkpolicies
+    resourceNames:
+      - security.*
+    verbs:
+      - get
+      - watch
+      - list
+---
+
+# This allows crud access to Calico StagedNetworkPolicy resources in the security tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-write-stagednetworkpolicies-in-tier-security
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: stagednetworkpolicies
+    tigera.io/scope: namespace
+    tigera.io/access: read-write
+    tigera.io/tier: security
+    tigera.io/rbac-id: rdwr-snp-tier-security
+  annotations:
+    tigera.io/description: "read-write StagedNetworkPolicy resources in Tier security"
+rules:
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.stagednetworkpolicies
+    resourceNames:
+      - security.*
+    verbs:
+      - "*"
+---
+
+# This allows read access to Calico StagedNetworkPolicy resources in the security tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-stagednetworkpolicies-tier-security
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: stagednetworkpolicies
+    tigera.io/scope: namespace
+    tigera.io/access: read
+    tigera.io/tier: security
+    tigera.io/rbac-id: rd-snp-tier-security
+  annotations:
+    tigera.io/description: "read StagedNetworkPolicy resources in Tier security"
+rules:
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.stagednetworkpolicies
+    resourceNames:
+      - security.*
+    verbs:
+      - get
+      - watch
+      - list
+---
+
+# This allows crud access to Calico StagedGlobalNetworkPolicy resources in the security tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-write-stagedglobalnetworkpolicies-in-tier-security
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: stagedglobalnetworkpolicies
+    tigera.io/scope: global
+    tigera.io/access: read-write
+    tigera.io/tier: security
+    tigera.io/rbac-id: rdwr-sgnp-tier-security
+  annotations:
+    tigera.io/description: "read-write StagedGlobalNetworkPolicy resources in Tier security"
+rules:
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.stagedglobalnetworkpolicies
+    resourceNames:
+      - security.*
+    verbs:
+      - "*"
+---
+
+# This allows read access to Calico StagedGlobalNetworkPolicy resources in the security tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-stagedglobalnetworkpolicies-in-tier-security
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: stagedglobalnetworkpolicies
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/tier: security
+    tigera.io/rbac-id: rd-sgnp-tier-security
+  annotations:
+    tigera.io/description: "read StagedGlobalNetworkPolicy resources in Tier security"
+rules:
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.stagedglobalnetworkpolicies
+    resourceNames:
+      - security.*
+    verbs:
+      - get
+      - watch
+      - list
+---
+
+## platform tier
+
+# This allows read access to Calico GlobalNetworkPolicy resources in the platform tier.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tigera-read-globalnetworkpolicies-in-tier-platform
+  labels:
+    tigera.io/rbac-controller: "true"
+    tigera.io/resource: globalnetworkpolicies
+    tigera.io/scope: global
+    tigera.io/access: read
+    tigera.io/tier: platform
+    tigera.io/rbac-id: rd-gnp-tier-platform
+  annotations:
+    tigera.io/description: "read GlobalNetworkPolicy resources in Tier platform"
+rules:
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.globalnetworkpolicies
+    resourceNames:
+      - platform.*
+    verbs:
+      - get
+      - watch
+      - list
+---

@@ -2,7 +2,7 @@ apiVersion: projectcalico.org/v3
 kind: NetworkPolicy
 metadata:
   name: log-nginx-ingress
-  namespace: ns1
+  namespace: dev
 spec:
   order: 900
   selector: "app == 'nginx'"

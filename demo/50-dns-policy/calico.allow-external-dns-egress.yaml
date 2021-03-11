@@ -1,14 +1,22 @@
 apiVersion: projectcalico.org/v3
 kind: GlobalNetworkPolicy
 metadata:
-  name: security.allow-google-dns-egress
+  name: security.allow-external-dns-egress
 spec:
   tier: security
-  selector: projectcalico.org/namespace == "ns1"
+  selector: projectcalico.org/namespace == "dev"
   order: 90
   types:
     - Egress
   egress:
+  - action: Allow
+    protocol: UDP
+    source: {}
+    destination:
+      ports:
+      - '53'
+      # openshift dns port
+      - '5353'
   - action: Allow
     source:
       selector: app == 'centos'

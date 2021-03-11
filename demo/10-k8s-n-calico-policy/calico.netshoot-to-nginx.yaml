@@ -1,9 +1,9 @@
-# allow ingress into nginx app within ns2 namespace
+# allow ingress into nginx app within uat namespace
 apiVersion: projectcalico.org/v3
 kind: NetworkPolicy
 metadata:
-  name: allow-nginx-ingress-ns2
-  namespace: ns2
+  name: allow-nginx-ingress
+  namespace: uat
 spec:
   order: 1000
   selector: "app == 'nginx'"
@@ -18,15 +18,15 @@ spec:
       - '80'
 ---
 
-# allow egress from any pod to nginx app within ns2 namespace
+# allow egress from any pod to nginx app within uat namespace
 apiVersion: projectcalico.org/v3
 kind: NetworkPolicy
 metadata:
-  name: allow-netshoot-egress-ns2
-  namespace: ns2
+  name: allow-netshoot-egress
+  namespace: uat
 spec:
   order: 1000
-  selector: "projectcalico.org/namespace == 'ns2'"
+  selector: "projectcalico.org/namespace == 'uat'"
   types:
   - Egress
   egress:

@@ -1,0 +1,28 @@
+# allow egress from centos in dev to nginx in uat
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: security.allow-dev-to-uat-nginx-egress
+  namespace: dev
+spec:
+  tier: security
+  order: 205
+  selector: "app == 'centos'"
+  types:
+  - Egress
+  egress:
+  - action: Allow
+    protocol: TCP
+    source: {}
+    destination:
+      selector: "app == 'nginx'"
+      namespaceSelector: "projectcalico.org/name == 'uat'"
+      ports:
+      - '80'
+  # rule not needed if there is preceeding allow-kube-dns policy
+  # - action: Allow
+  #   protocol: UDP
+  #   destination:
+  #     ports:
+  #     - '53'
+  - action: Pass

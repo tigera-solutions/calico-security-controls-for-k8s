@@ -1,6 +1,6 @@
 kind: Namespace
 apiVersion: v1
 metadata:
-  name: ns2
+  name: uat
   labels:
     compliance: enforced

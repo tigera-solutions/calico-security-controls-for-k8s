@@ -5,7 +5,7 @@ metadata:
 spec:
   tier: security
   order: 100
-  selector: "app == 'nginx'"
+  selector: "app == 'nginx' && security == 'strict'"
   types:
   - Ingress
   ingress:

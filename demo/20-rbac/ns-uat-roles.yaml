@@ -1,0 +1,167 @@
+# uat namespace RBAC for uat role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: uat-namespace-scoped-user-uat
+  namespace: uat
+  labels:
+    tigera.io/scope: namespace
+  annotations:
+    tigera.io/description: "access to resources within uat namespace"
+rules:
+  # [NetworkSets] Read access for Calico NetworkSet resources.
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - networksets
+    verbs:
+      - get
+      - watch
+      - list
+  # [policies] full access to NetworkPolicy resources
+  # - apiGroups:
+  #     - projectcalico.org
+  #   resources:
+  #     - tier.networkpolicies
+  #   resourceNames:
+  #     - default.*
+  #   verbs:
+  #     - "*"
+  # read access for Kubernetes NetworkPolicy resources in the default tier.
+  - apiGroups:
+      - networking.k8s.io
+      - extensions
+    resources:
+      - networkpolicies
+    verbs:
+      - get
+      - watch
+      - list
+  # read access to (Calico) NetworkPolicy resources in default tier
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.networkpolicies
+    resourceNames:
+      - default.*
+    verbs:
+      - get
+      - watch
+      - list
+  # read access to (Calico) NetworkPolicy resources in security tier
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.networkpolicies
+    resourceNames:
+      - security.*
+    verbs:
+      - get
+      - watch
+      - list
+  # read access to GlobalNetworkPolicy resources in default tier
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.globalnetworkpolicies
+    resourceNames:
+      - default.*
+    verbs:
+      - get
+      - watch
+      - list
+  # read access to GlobalNetworkPolicy resources in security tier
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.globalnetworkpolicies
+    resourceNames:
+      - security.*
+    verbs:
+      - get
+      - watch
+      - list
+  # read access to StagedNetworkPolicy resources in default tier
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.stagednetworkpolicies
+    resourceNames:
+      - default.*
+    verbs:
+      - get
+      - watch
+      - list
+  # read access to StagedGlobalNetworkPolicy resources in default tier
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - tier.stagedglobalnetworkpolicies
+    resourceNames:
+      - default.*
+    verbs:
+      - get
+      - watch
+      - list
+  # read access to StagedKubernetesNetworkPolicy resources in default tier
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - stagedkubernetesnetworkpolicies
+    verbs:
+      - get
+      - watch
+      - list
+  # Read access to resource to allow Flow Viz rendering
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - hostendpoints
+    verbs:
+      - get
+      - list
+  # # [Tiers] Read access for tiers
+  # # Requires watch access for tiers to manage policies
+  # - apiGroups:
+  #     - projectcalico.org
+  #   resources:
+  #     - tiers
+  #   verbs:
+  #     - watch
+  # - apiGroups:
+  #     - projectcalico.org
+  #   resources:
+  #     - tiers
+  #   # only allow access to listed tiers
+  #   resourceNames:
+  #     # - security
+  #     - default
+  #   verbs:
+  #     - list
+  #     - get
+  #     - watch
+---
+
+# User jacki RBAC bindings for cluster-scoped resources
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: uat-namespace-scoped-bindings-user-uat
+  namespace: uat
+subjects:
+  - kind: ServiceAccount
+    name: jacki
+    namespace: default
+    # namespace: uat
+roleRef:
+  kind: Role
+  name: uat-namespace-scoped-user-uat
+  apiGroup: rbac.authorization.k8s.io
+---

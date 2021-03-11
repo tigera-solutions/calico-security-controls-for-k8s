@@ -7,4 +7,4 @@ spec:
   # schedule examples:
   ## every top of hour: 0 * * * *
   ## every 5 min: */5 * * * *
-  schedule:  0 0 * * *
+  schedule: '0 */12 * * *'

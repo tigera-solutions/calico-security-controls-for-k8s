@@ -1,11 +1,12 @@
 apiVersion: projectcalico.org/v3
 kind: GlobalNetworkPolicy
 metadata:
-  name: security.allow-kube-dns
+  name: platform.allow-kube-dns
 spec:
-  tier: security
-  order: 1000
-  selector: all()
+  tier: platform
+  order: 200
+  selector: 'projectcalico.org/namespace not in {"acme"}'
+  # selector: all()
   types:
   - Egress
   egress:

@@ -5,7 +5,7 @@ metadata:
 spec:
   order: 2000
   # target only these namespaces
-  selector: "projectcalico.org/namespace == 'ns1' || projectcalico.org/namespace == 'ns2'"
+  selector: "projectcalico.org/namespace == 'dev' || projectcalico.org/namespace == 'uat'"
   types:
   - Ingress
   - Egress

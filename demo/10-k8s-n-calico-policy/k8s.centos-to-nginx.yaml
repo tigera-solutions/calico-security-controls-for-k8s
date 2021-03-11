@@ -1,9 +1,9 @@
-# allow nginx ingress within ns1 namespace
+# allow nginx ingress within dev namespace
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-nginx-ingress-ns1
-  namespace: ns1
+  name: allow-nginx-ingress
+  namespace: dev
 spec:
   podSelector:
     matchLabels:
@@ -17,12 +17,12 @@ spec:
           compliance: open
 ---
 
-# allow centos egress to nginx app within ns1 namespace
+# allow centos egress to nginx app within dev namespace
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-centos-egress-ns1
-  namespace: ns1
+  name: allow-centos-egress
+  namespace: dev
 spec:
   podSelector:
     matchLabels:

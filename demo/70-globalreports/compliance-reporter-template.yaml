@@ -21,7 +21,7 @@ spec:
     # Modify this image name, if you have re-tagged the image and are using a local
     # docker image repository.
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    image: quay.io/tigera/compliance-reporter:v3.3.0
+    image: quay.io/tigera/compliance-reporter:v3.5.0
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     env:
       # Modify this value with name of an existing globalreport resource.

@@ -2,19 +2,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ns2-nginx
-  namespace: ns2
+  name: dev-nginx
+  namespace: dev
 spec:
   selector:
     matchLabels:
       app: nginx
-      security: strict
   replicas: 2
   template:
     metadata:
       labels:
         app: nginx
-        security: strict
     spec:
       containers:
       - name: nginx
@@ -28,7 +26,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nginx-svc
-  namespace: ns2
+  namespace: dev
   labels:
     service: nginx
 spec:
