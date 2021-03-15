@@ -369,6 +369,7 @@ kubectl delete -f demo/30-tier/calico.log-access.yaml
 kubectl delete -f demo/30-tier/calico.allow-kube-dns.yaml
 kubectl delete -f demo/40-netsets/calico.deny-public-nets-egress.yaml
 kubectl delete -f demo/50-dns-policy/calico.allow-external-dns-egress.yaml
+kubectl delete -f demo/50-dns-policy/calico.pass-traffic.yaml
 kubectl delete -f demo/60-globalalerts/calico.dev-to-uat-nginx.yaml
 
 # delete RBAC
